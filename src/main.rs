@@ -1,45 +1,57 @@
 mod socks5;
 mod process_manager;
+mod config;
+mod adapters;
 
 use clap::Parser;
-use log::{info, error};
+use log::{info, error, warn};
 use crate::socks5::Socks5Server;
 use crate::process_manager::ProcessManager;
+use crate::config::Settings;
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 struct Args {
-    /// Port to listen on for SOCKS5 proxy
-    #[arg(short, long, default_value_t = 9050)]
-    port: u16,
-
-    /// Enable verbose logging
-    #[arg(short, long)]
-    verbose: bool,
+    /// Path to configuration file
+    #[arg(short, long, default_value = "chimera.toml")]
+    config: String,
 }
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    // Initialize logger
+    // 1. Load Configuration
+    let settings = match Settings::new() {
+        Ok(s) => s,
+        Err(e) => {
+            eprintln!("Failed to load configuration: {}", e);
+            // Fallback to defaults if config fails? Or exit?
+            // For now, let's exit to force proper config.
+            return Err(anyhow::anyhow!("Configuration load error: {}", e));
+        }
+    };
+
+    // 2. Initialize Logger
     if std::env::var("RUST_LOG").is_err() {
-        std::env::set_var("RUST_LOG", "info");
+        std::env::set_var("RUST_LOG", &settings.server.log_level);
     }
     env_logger::init();
 
-    // Parse arguments
-    let args = Args::parse();
-
     info!("🦁 Chimera Super Node starting...");
+    info!("Listening on {}:{}", settings.server.host, settings.server.port);
     
-    // 1. Start Sidecar Processes (Tor, I2P)
-    let pm = ProcessManager::new();
+    // 3. Start Sidecar Processes (Tor, I2P)
+    // TODO: Pass paths from settings to ProcessManager
+    let pm = ProcessManager::new(); 
     if let Err(e) = pm.start_processes().await {
         error!("Failed to start background processes: {}", e);
     }
 
-    // 2. Start SOCKS5 Proxy
-    // We assume Tor is on 9052 (internal) and I2P is on 4447
-    let server = Socks5Server::new(args.port, 9052, 4447);
+    // 4. Start SOCKS5 Proxy
+    let server = Socks5Server::new(
+        settings.server.port, 
+        settings.tor.socks_port, 
+        settings.i2p.socks_port
+    );
     
     if let Err(e) = server.run().await {
         error!("SOCKS5 Server crashed: {}", e);
