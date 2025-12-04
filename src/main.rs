@@ -40,8 +40,7 @@ async fn main() -> anyhow::Result<()> {
     info!("Listening on {}:{}", settings.server.host, settings.server.port);
     
     // 3. Start Sidecar Processes (Tor, I2P)
-    // TODO: Pass paths from settings to ProcessManager
-    let pm = ProcessManager::new(); 
+    let pm = ProcessManager::new(settings.tor.clone(), settings.i2p.clone()); 
     if let Err(e) = pm.start_processes().await {
         error!("Failed to start background processes: {}", e);
     }

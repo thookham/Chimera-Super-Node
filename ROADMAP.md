@@ -18,11 +18,22 @@ This document outlines the development plan for **Chimera**, the unified anonymi
 
 ## 🕸️ Phase 2.5: Decentralized Web & Storage (v0.8)
 **Goal**: Integrate content and social networks.
-- [ ] **Freenet/Hyphanet**: Support for `USK@` and `SSK@` keys.
-- [ ] **ZeroNet**: Support for `.bit` domains and Zite routing.
-- [ ] **RetroShare**: Integration for friend-to-friend routing.
-- [ ] **GNUnet**: Integration of the GNUnet stack for distributed apps.
-- [ ] **Tribler**: Anonymous file sharing integration.
+- [ ] **Freenet (Hyphanet)**:
+    -   Integration via **FCPv2** (Freenet Client Protocol).
+    -   Support for `USK@` (Updatable Subspace Keys) and `SSK@` (Signed Subspace Keys).
+- [ ] **ZeroNet**:
+    -   Integration via **ZeroFrame API** (JSON-based).
+    -   Support for `.bit` domains and Zite routing.
+    -   Explore `zeronet-rs` for native Rust integration.
+- [ ] **RetroShare**:
+    -   Integration via **JSON API** (OpenAPI spec).
+    -   Support for Friend-to-Friend (F2F) routing and GXS (Generic eXchange System).
+- [ ] **GNUnet**:
+    -   Integration via C bindings or `gnunet-rs`.
+    -   Support for GNS (GNU Name System) and CADET transport.
+- [ ] **Tribler**:
+    -   Integration via REST API.
+    -   Support for anonymous BitTorrent streaming and searching.
 
 ## 🔗 Phase 3: The "Super" Protocol (v1.0)
 **Goal**: Advanced features and protocol chaining.

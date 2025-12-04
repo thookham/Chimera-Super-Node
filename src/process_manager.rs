@@ -2,36 +2,40 @@ use tokio::process::Command;
 use std::process::Stdio;
 use log::{info, warn, error};
 use std::path::Path;
+use crate::config::{TorSettings, I2pSettings};
 
 pub struct ProcessManager {
-    tor_path: String,
-    i2p_path: String,
+    tor: TorSettings,
+    i2p: I2pSettings,
 }
 
 impl ProcessManager {
-    pub fn new() -> Self {
-        Self {
-            tor_path: "bin/tor.exe".to_string(),
-            i2p_path: "bin/i2pd.exe".to_string(),
-        }
+    pub fn new(tor: TorSettings, i2p: I2pSettings) -> Self {
+        Self { tor, i2p }
     }
 
     pub async fn start_processes(&self) -> anyhow::Result<()> {
-        self.start_tor().await?;
-        self.start_i2p().await?;
+        if self.tor.enabled {
+            self.start_tor().await?;
+        }
+        if self.i2p.enabled {
+            self.start_i2p().await?;
+        }
         Ok(())
     }
 
     async fn start_tor(&self) -> anyhow::Result<()> {
-        if !Path::new(&self.tor_path).exists() {
-            warn!("Tor binary not found at {}. Skipping Tor start.", self.tor_path);
+        if !Path::new(&self.tor.binary_path).exists() {
+            warn!("Tor binary not found at {}. Skipping Tor start.", self.tor.binary_path);
             return Ok(());
         }
 
         info!("Starting Tor...");
-        let child = Command::new(&self.tor_path)
+        let child = Command::new(&self.tor.binary_path)
             .arg("--SocksPort")
-            .arg("9052") // Internal Tor port (Chimera listens on 9050)
+            .arg(self.tor.socks_port.to_string())
+            .arg("--ControlPort")
+            .arg(self.tor.control_port.to_string())
             .arg("--DataDirectory")
             .arg("data/tor")
             .stdout(Stdio::null()) // TODO: Capture logs
@@ -46,15 +50,15 @@ impl ProcessManager {
     }
 
     async fn start_i2p(&self) -> anyhow::Result<()> {
-        if !Path::new(&self.i2p_path).exists() {
-            warn!("I2PD binary not found at {}. Skipping I2P start.", self.i2p_path);
+        if !Path::new(&self.i2p.binary_path).exists() {
+            warn!("I2PD binary not found at {}. Skipping I2P start.", self.i2p.binary_path);
             return Ok(());
         }
 
         info!("Starting I2PD...");
-        let child = Command::new(&self.i2p_path)
-            .arg("--socksproxy.enabled=true")
-            .arg("--socksproxy.port=4447")
+        let child = Command::new(&self.i2p.binary_path)
+            .arg(format!("--socksproxy.port={}", self.i2p.socks_port))
+            .arg(format!("--httpproxy.port={}", self.i2p.http_proxy_port))
             .arg("--datadir=data/i2p")
             .stdout(Stdio::null())
             .stderr(Stdio::null())
@@ -67,3 +71,4 @@ impl ProcessManager {
         Ok(())
     }
 }
+

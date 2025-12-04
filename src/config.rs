@@ -1,7 +1,7 @@
 use serde::Deserialize;
 use config::{Config, File, ConfigError};
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct Settings {
     pub server: ServerSettings,
     pub tor: TorSettings,
@@ -10,14 +10,14 @@ pub struct Settings {
     pub nym: NymSettings,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct ServerSettings {
     pub host: String,
     pub port: u16,
     pub log_level: String,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct TorSettings {
     pub enabled: bool,
     pub binary_path: String,
@@ -25,7 +25,7 @@ pub struct TorSettings {
     pub control_port: u16,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct I2pSettings {
     pub enabled: bool,
     pub binary_path: String,
@@ -33,14 +33,14 @@ pub struct I2pSettings {
     pub http_proxy_port: u16,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct LokinetSettings {
     pub enabled: bool,
     pub binary_path: String,
     pub dns_port: u16,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct NymSettings {
     pub enabled: bool,
     pub binary_path: String,
