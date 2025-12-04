@@ -16,6 +16,14 @@ This document outlines the development plan for **Chimera**, the unified anonymi
 - [ ] **Nym**: Integration via native Rust client.
 - [ ] **Unified Config**: Single `chimera.toml` for all networks.
 
+## 🕸️ Phase 2.5: Decentralized Web & Storage (v0.8)
+**Goal**: Integrate content and social networks.
+- [ ] **Freenet/Hyphanet**: Support for `USK@` and `SSK@` keys.
+- [ ] **ZeroNet**: Support for `.bit` domains and Zite routing.
+- [ ] **RetroShare**: Integration for friend-to-friend routing.
+- [ ] **GNUnet**: Integration of the GNUnet stack for distributed apps.
+- [ ] **Tribler**: Anonymous file sharing integration.
+
 ## 🔗 Phase 3: The "Super" Protocol (v1.0)
 **Goal**: Advanced features and protocol chaining.
 - [ ] **Protocol Chaining**: Route Tor over Nym (`User -> Nym -> Tor -> Dest`).

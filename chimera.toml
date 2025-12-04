@@ -1,0 +1,26 @@
+[server]
+host = "127.0.0.1"
+port = 9050
+log_level = "info"
+
+[tor]
+enabled = true
+binary_path = "bin/tor.exe"
+socks_port = 9052
+control_port = 9051
+
+[i2p]
+enabled = true
+binary_path = "bin/i2pd.exe"
+socks_port = 4447
+http_proxy_port = 4444
+
+[lokinet]
+enabled = false
+binary_path = "bin/lokinet.exe"
+dns_port = 1053
+
+[nym]
+enabled = false
+binary_path = "bin/nym-socks5-client.exe"
+socks_port = 1080

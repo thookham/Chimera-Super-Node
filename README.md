@@ -53,14 +53,26 @@ graph TD
 
 ```bash
 # Clone the repository with submodules
-git clone --recursive https://github.com/thookham/TorI2P_SuperNode.git
-cd TorI2P_SuperNode
+git clone --recursive https://github.com/thookham/Chimera-Super-Node.git
+cd Chimera-Super-Node
 
 # Build the project
 cargo build --release
+```
 
+### Runtime Requirements
+
+Chimera requires the **Tor** and **I2PD** binaries to be present in the `bin/` directory or in your system PATH.
+
+1.  **Create a `bin` directory** in the project root.
+2.  **Download Tor**: [Tor Expert Bundle](https://www.torproject.org/download/tor/)
+    -   Extract `tor.exe` to `bin/tor.exe`.
+3.  **Download I2PD**: [I2PD Releases](https://github.com/PurpleI2P/i2pd/releases)
+    -   Extract `i2pd.exe` to `bin/i2pd.exe`.
+
+```bash
 # Run the daemon
-./target/release/chimera
+./target/release/chimera_node
 ```
 
 ## 📖 Usage
