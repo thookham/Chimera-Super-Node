@@ -14,8 +14,14 @@
 -   **Unified Interface**: A single SOCKS5/HTTP proxy that routes traffic based on TLD.
     -   `.onion` → **Tor** (The Onion Router)
     -   `.i2p` → **I2PD** (Invisible Internet Project)
-    -   `.loki` → **Lokinet** (LLARP)
+    -   `.loki` → **Lokinet** (Session Ecosystem)
     -   `.nym` → **Nym** (Mixnet)
+    -   `.eth` / `.bit` → **ZeroNet** (Decentralized Web)
+    -   `USK@` / `SSK@` → **Freenet/Hyphanet** (Censorship-Resistant Store)
+-   **Future Protocol Support**:
+    -   **RetroShare**: Friend-to-Friend (F2F) secure messaging and sharing.
+    -   **GNUnet**: Secure, distributed networking stack.
+    -   **Tribler**: Anonymous BitTorrent-like file sharing.
 -   **Rust Core**: Built in Rust for memory safety, performance, and native integration with Nym.
 -   **Embedded Daemons**: Manages the lifecycle of underlying anonymity protocols automatically.
 -   **Protocol Chaining** (Planned): Route Tor traffic through Nym for metadata resistance.
