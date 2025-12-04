@@ -1,0 +1,20 @@
+[package]
+name = "chimera_node"
+version = "0.1.0"
+edition = "2021"
+authors = ["Antigravity <antigravity@example.com>"]
+description = "Unified Super Node for Tor, I2P, Lokinet, and Nym"
+
+[dependencies]
+tokio = { version = "1.35", features = ["full"] }
+clap = { version = "4.4", features = ["derive"] }
+log = "0.4"
+env_logger = "0.10"
+anyhow = "1.0"
+thiserror = "1.0"
+futures = "0.3"
+# socks5-proto = "0.3" # We might implement our own or use a crate later
+
+[build-dependencies]
+cmake = "0.1" # For building C/C++ submodules
+cc = "1.0"    # For compiling C/C++ code
