@@ -6,16 +6,16 @@ use std::process::Stdio;
 use std::path::Path;
 use std::sync::Arc;
 use tokio::sync::Mutex;
-use crate::config::LokinetSettings;
+use crate::config::I2pSettings;
 use super::ProtocolAdapter;
 
-pub struct LokinetAdapter {
-    settings: LokinetSettings,
+pub struct I2pAdapter {
+    settings: I2pSettings,
     process: Arc<Mutex<Option<Child>>>,
 }
 
-impl LokinetAdapter {
-    pub fn new(settings: LokinetSettings) -> Self {
+impl I2pAdapter {
+    pub fn new(settings: I2pSettings) -> Self {
         Self {
             settings,
             process: Arc::new(Mutex::new(None)),
@@ -24,22 +24,22 @@ impl LokinetAdapter {
 }
 
 #[async_trait]
-impl ProtocolAdapter for LokinetAdapter {
+impl ProtocolAdapter for I2pAdapter {
     async fn start(&self) -> Result<()> {
         if !self.settings.enabled {
             return Ok(());
         }
 
         if !Path::new(&self.settings.binary_path).exists() {
-            warn!("Lokinet binary not found at {}. Skipping Lokinet start.", self.settings.binary_path);
+            warn!("I2PD binary not found at {}. Skipping I2P start.", self.settings.binary_path);
             return Ok(());
         }
 
-        info!("Starting Lokinet...");
-        // Lokinet usually runs as a system service or needs admin privileges
-        // For this adapter, we assume we are running the binary directly
+        info!("Starting I2PD...");
         let child = Command::new(&self.settings.binary_path)
-            .arg(format!("--dns-bind=127.0.0.1:{}", self.settings.dns_port))
+            .arg(format!("--socksproxy.port={}", self.settings.socks_port))
+            .arg(format!("--httpproxy.port={}", self.settings.http_proxy_port))
+            .arg("--datadir=data/i2p")
             .stdout(Stdio::null())
             .stderr(Stdio::null())
             .spawn()?;
@@ -47,25 +47,21 @@ impl ProtocolAdapter for LokinetAdapter {
         let mut proc_lock = self.process.lock().await;
         *proc_lock = Some(child);
         
-        info!("Lokinet started successfully.");
+        info!("I2PD started successfully.");
         Ok(())
     }
 
     async fn stop(&self) -> Result<()> {
         let mut proc_lock = self.process.lock().await;
         if let Some(mut child) = proc_lock.take() {
-            info!("Stopping Lokinet...");
+            info!("Stopping I2PD...");
             child.kill().await?;
         }
         Ok(())
     }
 
     fn get_proxy_addr(&self) -> String {
-        // Lokinet is usually a VPN/Tun interface, not a SOCKS proxy.
-        // But for consistency, we might return a DNS port or a placeholder.
-        // Or maybe we need to implement a SOCKS-to-Lokinet bridge.
-        // For now, returning empty as it's not a standard SOCKS proxy.
-        String::new() 
+        format!("127.0.0.1:{}", self.settings.socks_port)
     }
 
     async fn is_healthy(&self) -> bool {

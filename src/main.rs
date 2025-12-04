@@ -4,7 +4,7 @@ mod config;
 mod adapters;
 
 use clap::Parser;
-use log::{info, error, warn};
+use log::{info, error};
 use crate::socks5::Socks5Server;
 use crate::process_manager::ProcessManager;
 use crate::config::Settings;

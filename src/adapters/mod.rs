@@ -1,5 +1,7 @@
 pub mod nym;
 pub mod lokinet;
+pub mod tor;
+pub mod i2p;
 
 use async_trait::async_trait;
 use anyhow::Result;

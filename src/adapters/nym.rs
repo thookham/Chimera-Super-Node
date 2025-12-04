@@ -1,6 +1,6 @@
 use async_trait::async_trait;
 use anyhow::Result;
-use log::{info, warn, error};
+use log::{info, warn};
 use tokio::process::{Command, Child};
 use std::process::Stdio;
 use std::path::Path;

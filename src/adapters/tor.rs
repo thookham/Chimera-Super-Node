@@ -6,16 +6,16 @@ use std::process::Stdio;
 use std::path::Path;
 use std::sync::Arc;
 use tokio::sync::Mutex;
-use crate::config::LokinetSettings;
+use crate::config::TorSettings;
 use super::ProtocolAdapter;
 
-pub struct LokinetAdapter {
-    settings: LokinetSettings,
+pub struct TorAdapter {
+    settings: TorSettings,
     process: Arc<Mutex<Option<Child>>>,
 }
 
-impl LokinetAdapter {
-    pub fn new(settings: LokinetSettings) -> Self {
+impl TorAdapter {
+    pub fn new(settings: TorSettings) -> Self {
         Self {
             settings,
             process: Arc::new(Mutex::new(None)),
@@ -24,48 +24,47 @@ impl LokinetAdapter {
 }
 
 #[async_trait]
-impl ProtocolAdapter for LokinetAdapter {
+impl ProtocolAdapter for TorAdapter {
     async fn start(&self) -> Result<()> {
         if !self.settings.enabled {
             return Ok(());
         }
 
         if !Path::new(&self.settings.binary_path).exists() {
-            warn!("Lokinet binary not found at {}. Skipping Lokinet start.", self.settings.binary_path);
+            warn!("Tor binary not found at {}. Skipping Tor start.", self.settings.binary_path);
             return Ok(());
         }
 
-        info!("Starting Lokinet...");
-        // Lokinet usually runs as a system service or needs admin privileges
-        // For this adapter, we assume we are running the binary directly
+        info!("Starting Tor...");
         let child = Command::new(&self.settings.binary_path)
-            .arg(format!("--dns-bind=127.0.0.1:{}", self.settings.dns_port))
-            .stdout(Stdio::null())
+            .arg("--SocksPort")
+            .arg(self.settings.socks_port.to_string())
+            .arg("--ControlPort")
+            .arg(self.settings.control_port.to_string())
+            .arg("--DataDirectory")
+            .arg("data/tor")
+            .stdout(Stdio::null()) // TODO: Capture logs
             .stderr(Stdio::null())
             .spawn()?;
 
         let mut proc_lock = self.process.lock().await;
         *proc_lock = Some(child);
         
-        info!("Lokinet started successfully.");
+        info!("Tor started successfully.");
         Ok(())
     }
 
     async fn stop(&self) -> Result<()> {
         let mut proc_lock = self.process.lock().await;
         if let Some(mut child) = proc_lock.take() {
-            info!("Stopping Lokinet...");
+            info!("Stopping Tor...");
             child.kill().await?;
         }
         Ok(())
     }
 
     fn get_proxy_addr(&self) -> String {
-        // Lokinet is usually a VPN/Tun interface, not a SOCKS proxy.
-        // But for consistency, we might return a DNS port or a placeholder.
-        // Or maybe we need to implement a SOCKS-to-Lokinet bridge.
-        // For now, returning empty as it's not a standard SOCKS proxy.
-        String::new() 
+        format!("127.0.0.1:{}", self.settings.socks_port)
     }
 
     async fn is_healthy(&self) -> bool {
