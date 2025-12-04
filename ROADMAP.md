@@ -25,6 +25,9 @@ This document outlines the development plan for **Chimera**, the unified anonymi
     -   Integration via **ZeroFrame API** (JSON-based).
     -   Support for `.bit` domains and Zite routing.
     -   Explore `zeronet-rs` for native Rust integration.
+- [ ] **IPFS**:
+    -   Integration via **Kubo RPC API** or `rust-ipfs`.
+    -   Support for `ipfs://` and `ipns://` routing.
 - [ ] **RetroShare**:
     -   Integration via **JSON API** (OpenAPI spec).
     -   Support for Friend-to-Friend (F2F) routing and GXS (Generic eXchange System).

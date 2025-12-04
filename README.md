@@ -17,6 +17,7 @@
     -   `.loki` → **Lokinet** (Session Ecosystem)
     -   `.nym` → **Nym** (Mixnet)
     -   `.eth` / `.bit` → **ZeroNet** (Decentralized Web)
+    -   `ipfs://` → **IPFS** (InterPlanetary File System)
     -   `USK@` / `SSK@` → **Freenet/Hyphanet** (Censorship-Resistant Store)
 -   **Future Protocol Support**:
     -   **RetroShare**: Friend-to-Friend (F2F) secure messaging and sharing.
