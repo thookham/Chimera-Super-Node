@@ -1,5 +1,10 @@
+mod socks5;
+mod process_manager;
+
 use clap::Parser;
-use log::{info, debug};
+use log::{info, error};
+use crate::socks5::Socks5Server;
+use crate::process_manager::ProcessManager;
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -16,26 +21,30 @@ struct Args {
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     // Initialize logger
+    if std::env::var("RUST_LOG").is_err() {
+        std::env::set_var("RUST_LOG", "info");
+    }
     env_logger::init();
 
     // Parse arguments
     let args = Args::parse();
 
-    if args.verbose {
-        std::env::set_var("RUST_LOG", "debug");
-        env_logger::init(); // Re-init might not work as expected, usually set env var before init. 
-                            // For MVP, we'll rely on user setting RUST_LOG env var or improve this later.
-    }
-
     info!("🦁 Chimera Super Node starting...");
-    info!("Listening on 127.0.0.1:{}", args.port);
-
-    // TODO: Initialize Protocol Adapters (Tor, I2PD, Lokinet, Nym)
     
-    // TODO: Start SOCKS5 Listener
-    
-    // Keep the main thread running
-    loop {
-        tokio::time::sleep(tokio::time::Duration::from_secs(60)).await;
+    // 1. Start Sidecar Processes (Tor, I2P)
+    let pm = ProcessManager::new();
+    if let Err(e) = pm.start_processes().await {
+        error!("Failed to start background processes: {}", e);
     }
+
+    // 2. Start SOCKS5 Proxy
+    // We assume Tor is on 9052 (internal) and I2P is on 4447
+    let server = Socks5Server::new(args.port, 9052, 4447);
+    
+    if let Err(e) = server.run().await {
+        error!("SOCKS5 Server crashed: {}", e);
+    }
+
+    Ok(())
 }
+
