@@ -1,3 +1,6 @@
+pub mod nym;
+pub mod lokinet;
+
 use async_trait::async_trait;
 use anyhow::Result;
 

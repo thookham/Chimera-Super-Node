@@ -39,8 +39,13 @@ async fn main() -> anyhow::Result<()> {
     info!("🦁 Chimera Super Node starting...");
     info!("Listening on {}:{}", settings.server.host, settings.server.port);
     
-    // 3. Start Sidecar Processes (Tor, I2P)
-    let pm = ProcessManager::new(settings.tor.clone(), settings.i2p.clone()); 
+    // 3. Start Sidecar Processes (Tor, I2P, Nym, Lokinet)
+    let pm = ProcessManager::new(
+        settings.tor.clone(), 
+        settings.i2p.clone(),
+        settings.nym.clone(),
+        settings.lokinet.clone()
+    ); 
     if let Err(e) = pm.start_processes().await {
         error!("Failed to start background processes: {}", e);
     }

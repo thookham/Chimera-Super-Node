@@ -2,16 +2,29 @@ use tokio::process::Command;
 use std::process::Stdio;
 use log::{info, warn, error};
 use std::path::Path;
-use crate::config::{TorSettings, I2pSettings};
+use crate::config::{TorSettings, I2pSettings, NymSettings, LokinetSettings};
+use crate::adapters::{ProtocolAdapter, nym::NymAdapter, lokinet::LokinetAdapter};
 
 pub struct ProcessManager {
     tor: TorSettings,
     i2p: I2pSettings,
+    nym_adapter: NymAdapter,
+    lokinet_adapter: LokinetAdapter,
 }
 
 impl ProcessManager {
-    pub fn new(tor: TorSettings, i2p: I2pSettings) -> Self {
-        Self { tor, i2p }
+    pub fn new(
+        tor: TorSettings, 
+        i2p: I2pSettings,
+        nym: NymSettings,
+        lokinet: LokinetSettings
+    ) -> Self {
+        Self { 
+            tor, 
+            i2p,
+            nym_adapter: NymAdapter::new(nym),
+            lokinet_adapter: LokinetAdapter::new(lokinet),
+        }
     }
 
     pub async fn start_processes(&self) -> anyhow::Result<()> {
@@ -21,6 +34,15 @@ impl ProcessManager {
         if self.i2p.enabled {
             self.start_i2p().await?;
         }
+        
+        // Start Adapters
+        if let Err(e) = self.nym_adapter.start().await {
+            error!("Failed to start Nym: {}", e);
+        }
+        if let Err(e) = self.lokinet_adapter.start().await {
+            error!("Failed to start Lokinet: {}", e);
+        }
+
         Ok(())
     }
 
