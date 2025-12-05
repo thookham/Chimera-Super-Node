@@ -1,13 +1,13 @@
-mod socks5;
-mod process_manager;
-mod config;
 mod adapters;
+mod config;
+mod process_manager;
+mod socks5;
 
-use clap::Parser;
-use log::{info, error};
-use crate::socks5::Socks5Server;
-use crate::process_manager::ProcessManager;
 use crate::config::Settings;
+use crate::process_manager::ProcessManager;
+use crate::socks5::Socks5Server;
+use clap::Parser;
+use log::{error, info};
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -37,30 +37,34 @@ async fn main() -> anyhow::Result<()> {
     env_logger::init();
 
     info!("🦁 Chimera Super Node starting...");
-    info!("Listening on {}:{}", settings.server.host, settings.server.port);
-    
+    info!(
+        "Listening on {}:{}",
+        settings.server.host, settings.server.port
+    );
+
     // 3. Start Sidecar Processes (Tor, I2P, Nym, Lokinet)
     let pm = ProcessManager::new(
-        settings.tor.clone(), 
+        settings.tor.clone(),
         settings.i2p.clone(),
         settings.nym.clone(),
-        settings.lokinet.clone()
-    ); 
+        settings.lokinet.clone(),
+    );
     if let Err(e) = pm.start_processes().await {
         error!("Failed to start background processes: {}", e);
     }
 
     // 4. Start SOCKS5 Proxy
     let server = Socks5Server::new(
-        settings.server.port, 
-        settings.tor.socks_port, 
-        settings.i2p.socks_port
+        settings.server.port,
+        settings.tor.socks_port,
+        settings.i2p.socks_port,
+        settings.lokinet.socks_port,
+        settings.nym.socks_port,
     );
-    
+
     if let Err(e) = server.run().await {
         error!("SOCKS5 Server crashed: {}", e);
     }
 
     Ok(())
 }
-

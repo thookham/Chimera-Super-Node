@@ -1,0 +1,48 @@
+# Chimera Configuration Template
+# Rename this file to 'chimera.toml' to use it.
+
+[server]
+# The interface to bind the Super Node to (0.0.0.0 for all interfaces)
+host = "127.0.0.1"
+# The port Chimera will listen on
+port = 9050
+# Logging verbosity: error, warn, info, debug, trace
+log_level = "info"
+
+# --- Protocol Configuration ---
+
+[tor]
+# Enable Tor integration
+enabled = true
+# Path to the Tor binary (tor.exe)
+binary_path = "bin/tor.exe"
+# SOCKS5 port Tor listens on
+socks_port = 9052
+# Control port for Tor management
+control_port = 9051
+
+[i2p]
+# Enable I2P integration (i2pd)
+enabled = true
+# Path to the i2pd binary
+binary_path = "bin/i2pd.exe"
+# SOCKS5 proxy port
+socks_port = 4447
+# HTTP proxy port
+http_proxy_port = 4444
+
+[lokinet]
+# Enable Lokinet integration
+enabled = false
+# Path to the Lokinet binary
+binary_path = "bin/lokinet.exe"
+# DNS port for .loki address resolution
+dns_port = 1053
+
+[nym]
+# Enable Nym Mixnet integration
+enabled = false
+# Path to the Nym client binary
+binary_path = "bin/nym-socks5-client.exe"
+# SOCKS5 port for Nym
+socks_port = 1080

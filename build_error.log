@@ -1,0 +1,50 @@
+   Compiling proc-macro2 v1.0.103
+   Compiling unicode-ident v1.0.22
+   Compiling quote v1.0.42
+   Compiling memchr v2.7.6
+   Compiling windows-link v0.2.1
+   Compiling serde_core v1.0.228
+   Compiling serde v1.0.228
+   Compiling cfg-if v1.0.4
+   Compiling version_check v0.9.5
+   Compiling windows_x86_64_msvc v0.53.1
+   Compiling ucd-trie v0.1.7
+   Compiling once_cell v1.21.3
+   Compiling once_cell_polyfill v1.70.2
+   Compiling futures-sink v0.3.31
+   Compiling pin-project-lite v0.2.16
+   Compiling futures-core v0.3.31
+   Compiling parking_lot_core v0.9.12
+   Compiling shlex v1.3.0
+   Compiling utf8parse v0.2.2
+   Compiling find-msvc-tools v0.1.5
+   Compiling anstyle v1.0.13
+   Compiling equivalent v1.0.2
+   Compiling windows-sys v0.61.2
+   Compiling getrandom v0.2.16
+   Compiling is_terminal_polyfill v1.70.2
+   Compiling serde_json v1.0.145
+   Compiling futures-task v0.3.31
+   Compiling futures-channel v0.3.31
+   Compiling anstyle-parse v0.2.7
+   Compiling smallvec v1.15.1
+   Compiling dlv-list v0.3.0
+error: linker `link.exe` not found
+  |
+  = note: program not found
+
+note: the msvc targets depend on the msvc linker but `link.exe` was not found
+
+note: please ensure that Visual Studio 2017 or later, or Build Tools for Visual Studio were installed with the Visual C++ option.
+
+note: VS Code is a different product, and is not sufficient.
+
+   Compiling futures-io v0.3.31
+error: could not compile `proc-macro2` (build script) due to 1 previous error
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `quote` (build script) due to 1 previous error
+error: could not compile `serde` (build script) due to 1 previous error
+error: could not compile `windows_x86_64_msvc` (build script) due to 1 previous error
+error: could not compile `serde_core` (build script) due to 1 previous error
+error: could not compile `parking_lot_core` (build script) due to 1 previous error
+error: could not compile `serde_json` (build script) due to 1 previous error
