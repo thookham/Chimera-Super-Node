@@ -1,0 +1,17 @@
+    Checking cosmwasm-crypto v2.2.2
+error[E0432]: unresolved import `ed25519_zebra::batch`
+  --> C:\Users\thook\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\cosmwasm-crypto-2.2.2\src\ed25519.rs:1:21
+   |
+ 1 | use ed25519_zebra::{batch, Signature, VerificationKey};
+   |                     ^^^^^ no `batch` in the root
+   |
+note: found an item that was configured out
+  --> C:\Users\thook\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\ed25519-zebra-4.1.0\src\lib.rs:11:9
+   |
+10 | #[cfg(feature = "alloc")]
+   |       ----------------- the item is gated behind the `alloc` feature
+11 | pub mod batch;
+   |         ^^^^^
+
+For more information about this error, try `rustc --explain E0432`.
+error: could not compile `cosmwasm-crypto` (lib) due to 1 previous error

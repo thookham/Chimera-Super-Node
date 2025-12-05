@@ -11,21 +11,21 @@
 
 ## 🚀 Features
 
--   **Unified Interface**: A single SOCKS5/HTTP proxy that routes traffic based on TLD.
-    -   `.onion` → **Tor** (The Onion Router)
-    -   `.i2p` → **I2PD** (Invisible Internet Project)
-    -   `.loki` → **Lokinet** (Session Ecosystem)
-    -   `.nym` → **Nym** (Mixnet)
-    -   `.eth` / `.bit` → **ZeroNet** (Decentralized Web)
-    -   `ipfs://` → **IPFS** (InterPlanetary File System)
-    -   `USK@` / `SSK@` → **Freenet/Hyphanet** (Censorship-Resistant Store)
--   **Future Protocol Support**:
-    -   **RetroShare**: Friend-to-Friend (F2F) secure messaging and sharing.
-    -   **GNUnet**: Secure, distributed networking stack.
-    -   **Tribler**: Anonymous BitTorrent-like file sharing.
--   **Rust Core**: Built in Rust for memory safety, performance, and native integration with Nym.
--   **Embedded Daemons**: Manages the lifecycle of underlying anonymity protocols automatically.
--   **Protocol Chaining** (Planned): Route Tor traffic through Nym for metadata resistance.
+- **Unified Interface**: A single SOCKS5/HTTP proxy that routes traffic based on TLD.
+  - `.onion` → **Tor** (The Onion Router)
+  - `.i2p` → **I2PD** (Invisible Internet Project)
+  - `.loki` → **Lokinet** (Session Ecosystem)
+  - `.nym` → **Nym** (Mixnet)
+  - `.eth` / `.bit` → **ZeroNet** (Decentralized Web)
+  - `ipfs://` → **IPFS** (InterPlanetary File System)
+  - `USK@` / `SSK@` → **Freenet/Hyphanet** (Censorship-Resistant Store)
+- **Future Protocol Support**:
+  - **RetroShare**: Friend-to-Friend (F2F) secure messaging and sharing.
+  - **GNUnet**: Secure, distributed networking stack.
+  - **Tribler**: Anonymous BitTorrent-like file sharing.
+- **Rust Core**: Built in Rust for memory safety, performance, and native integration with Nym.
+- **Embedded Daemons**: Manages the lifecycle of underlying anonymity protocols automatically.
+- **Protocol Chaining** (Planned): Route Tor traffic through Nym for metadata resistance.
 
 ## 🏗️ Architecture
 
@@ -52,9 +52,10 @@ graph TD
 ## 🛠️ Installation
 
 ### Prerequisites
--   **Rust**: `stable` toolchain ([Install Rust](https://rustup.rs/))
--   **CMake**: For compiling C/C++ dependencies.
--   **Git**: For fetching submodules.
+
+- **Rust**: `stable` toolchain ([Install Rust](https://rustup.rs/))
+- **CMake**: For compiling C/C++ dependencies.
+- **Git**: For fetching submodules.
 
 ### Build from Source
 
@@ -71,11 +72,11 @@ cargo build --release
 
 Chimera requires the **Tor** and **I2PD** binaries to be present in the `bin/` directory or in your system PATH.
 
-1.  **Create a `bin` directory** in the project root.
-2.  **Download Tor**: [Tor Expert Bundle](https://www.torproject.org/download/tor/)
-    -   Extract `tor.exe` to `bin/tor.exe`.
-3.  **Download I2PD**: [I2PD Releases](https://github.com/PurpleI2P/i2pd/releases)
-    -   Extract `i2pd.exe` to `bin/i2pd.exe`.
+1. **Create a `bin` directory** in the project root.
+2. **Download Tor**: [Tor Expert Bundle](https://www.torproject.org/download/tor/)
+    - Extract `tor.exe` to `bin/tor.exe`.
+3. **Download I2PD**: [I2PD Releases](https://github.com/PurpleI2P/i2pd/releases)
+    - Extract `i2pd.exe` to `bin/i2pd.exe`.
 
 ```bash
 # Run the daemon
@@ -86,14 +87,26 @@ Chimera requires the **Tor** and **I2PD** binaries to be present in the `bin/` d
 
 Configure your browser or application to use the Chimera proxy:
 
--   **Proxy Type**: SOCKS5
--   **Host**: `127.0.0.1`
--   **Port**: `9050` (Default)
+- **Proxy Type**: SOCKS5
+- **Host**: `127.0.0.1`
+- **Port**: `9050` (Default)
 
 Now you can access:
--   `http://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion` (Tor)
--   `http://i2p-projekt.i2p` (I2P)
--   `http://directory.loki` (Lokinet)
+
+- `http://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion` (Tor)
+- `http://i2p-projekt.i2p` (I2P)
+- `http://directory.loki` (Lokinet)
+
+### Nym Configuration
+
+To use Nym (SOCKS5), you must specify a valid **Network Requester** address in `chimera.toml`:
+
+```toml
+[nym]
+enabled = true
+# Example Network Requester Address (Check Nym Explorer for valid ones)
+upstream_provider = "By...ID@GatewayID"
+```
 
 ## 🗺️ Roadmap
 

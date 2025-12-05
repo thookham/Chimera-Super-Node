@@ -1,24 +1,27 @@
+use super::ProtocolAdapter;
+use crate::config::NymSettings;
+use anyhow::{anyhow, Result};
 use async_trait::async_trait;
-use anyhow::Result;
-use log::{info, warn};
-use tokio::process::{Command, Child};
-use std::process::Stdio;
+use log::{error, info, warn};
+use nym_sdk::mixnet;
+use std::fs;
 use std::path::Path;
 use std::sync::Arc;
 use tokio::sync::Mutex;
-use crate::config::NymSettings;
-use super::ProtocolAdapter;
 
 pub struct NymAdapter {
     settings: NymSettings,
-    process: Arc<Mutex<Option<Child>>>,
+    // We store the client wrapped in an Option.
+    // If the type is not exactly SmsMixnetClient, we might need to adjust.
+    // Based on SDK patterns, it is likely exported or public.
+    client: Arc<Mutex<Option<mixnet::Socks5MixnetClient>>>,
 }
 
 impl NymAdapter {
     pub fn new(settings: NymSettings) -> Self {
         Self {
             settings,
-            process: Arc::new(Mutex::new(None)),
+            client: Arc::new(Mutex::new(None)),
         }
     }
 }
@@ -30,35 +33,50 @@ impl ProtocolAdapter for NymAdapter {
             return Ok(());
         }
 
-        if !Path::new(&self.settings.binary_path).exists() {
-            warn!("Nym binary not found at {}. Skipping Nym start.", self.settings.binary_path);
-            return Ok(());
+        let provider = match &self.settings.upstream_provider {
+            Some(p) => p,
+            None => {
+                error!("Nym is enabled but no 'upstream_provider' is configured. SOCKS5 client cannot start.");
+                warn!("Please set 'nym.upstream_provider' in your config to a valid Nym Network Requester address.");
+                // We return Ok to not crash the Main server, but Nym won't work.
+                return Ok(());
+            }
+        };
+
+        info!("Initializing Native Nym Client with provider: {}", provider);
+
+        let data_dir = Path::new("data/nym");
+        if !data_dir.exists() {
+            fs::create_dir_all(data_dir)?;
         }
 
-        info!("Starting Nym SOCKS5 Client...");
-        // Example command: nym-socks5-client run --id my-client
-        let child = Command::new(&self.settings.binary_path)
-            .arg("run")
-            .arg("--id")
-            .arg("chimera-client")
-            // .arg("--port") // Assuming we can configure port via args or config file
-            // .arg(self.settings.socks_port.to_string())
-            .stdout(Stdio::null())
-            .stderr(Stdio::null())
-            .spawn()?;
+        // Configure SOCKS5
+        let socks5_config = mixnet::Socks5::new(provider.clone());
 
-        let mut proc_lock = self.process.lock().await;
-        *proc_lock = Some(child);
-        
-        info!("Nym started successfully.");
+        // Use new_ephemeral for now to avoid storage complexity issues in this phase
+        let client_builder =
+            mixnet::MixnetClientBuilder::new_ephemeral().socks5_config(socks5_config);
+
+        let client_instance = client_builder.build()?;
+
+        info!("Connecting to Mixnet...");
+        let connected_client = client_instance.connect_to_mixnet_via_socks5().await?;
+
+        let url = connected_client.socks5_url();
+        info!("Nym SOCKS5 Client listening at: {}", url);
+
+        let mut client_lock = self.client.lock().await;
+        *client_lock = Some(connected_client);
+
+        info!("Nym Client started successfully.");
         Ok(())
     }
 
     async fn stop(&self) -> Result<()> {
-        let mut proc_lock = self.process.lock().await;
-        if let Some(mut child) = proc_lock.take() {
-            info!("Stopping Nym...");
-            child.kill().await?;
+        let mut client_lock = self.client.lock().await;
+        if let Some(client) = client_lock.take() {
+            info!("Disconnecting Nym Client...");
+            client.disconnect().await;
         }
         Ok(())
     }
@@ -68,8 +86,7 @@ impl ProtocolAdapter for NymAdapter {
     }
 
     async fn is_healthy(&self) -> bool {
-        // TODO: Implement actual health check (e.g. TCP connect)
-        let proc_lock = self.process.lock().await;
-        proc_lock.is_some()
+        let client_lock = self.client.lock().await;
+        client_lock.is_some()
     }
 }

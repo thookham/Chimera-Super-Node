@@ -1,13 +1,14 @@
-use async_trait::async_trait;
-use anyhow::Result;
-use log::{info, warn};
-use tokio::process::{Command, Child};
-use std::process::Stdio;
-use std::path::Path;
-use std::sync::Arc;
-use tokio::sync::Mutex;
-use crate::config::LokinetSettings;
 use super::ProtocolAdapter;
+use crate::config::LokinetSettings;
+use anyhow::Result;
+use async_trait::async_trait;
+use log::{info, warn};
+use std::fs;
+use std::path::Path;
+use std::process::Stdio;
+use std::sync::Arc;
+use tokio::process::{Child, Command};
+use tokio::sync::Mutex;
 
 pub struct LokinetAdapter {
     settings: LokinetSettings,
@@ -31,22 +32,40 @@ impl ProtocolAdapter for LokinetAdapter {
         }
 
         if !Path::new(&self.settings.binary_path).exists() {
-            warn!("Lokinet binary not found at {}. Skipping Lokinet start.", self.settings.binary_path);
+            warn!(
+                "Lokinet binary not found at {}. Skipping Lokinet start.",
+                self.settings.binary_path
+            );
             return Ok(());
         }
 
         info!("Starting Lokinet...");
+
+        // Prepare data directory
+        let data_dir = Path::new("data/lokinet");
+        if !data_dir.exists() {
+            fs::create_dir_all(data_dir)?;
+        }
+
+        // Copy template config to data dir
+        let config_path = data_dir.join("lokinet.ini");
+        if Path::new("chimera.lokinet.ini").exists() {
+            fs::copy("chimera.lokinet.ini", &config_path)?;
+        } else {
+            warn!("chimera.lokinet.ini template not found!");
+        }
+
         // Lokinet usually runs as a system service or needs admin privileges
         // For this adapter, we assume we are running the binary directly
         let child = Command::new(&self.settings.binary_path)
-            .arg(format!("--dns-bind=127.0.0.1:{}", self.settings.dns_port))
+            .arg(config_path.to_str().unwrap_or("lokinet.ini"))
             .stdout(Stdio::null())
             .stderr(Stdio::null())
             .spawn()?;
 
         let mut proc_lock = self.process.lock().await;
         *proc_lock = Some(child);
-        
+
         info!("Lokinet started successfully.");
         Ok(())
     }
@@ -65,7 +84,7 @@ impl ProtocolAdapter for LokinetAdapter {
         // But for consistency, we might return a DNS port or a placeholder.
         // Or maybe we need to implement a SOCKS-to-Lokinet bridge.
         // For now, returning empty as it's not a standard SOCKS proxy.
-        String::new() 
+        String::new()
     }
 
     async fn is_healthy(&self) -> bool {

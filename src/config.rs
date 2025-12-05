@@ -46,6 +46,7 @@ pub struct NymSettings {
     pub enabled: bool,
     pub binary_path: String,
     pub socks_port: u16,
+    pub upstream_provider: Option<String>,
 }
 
 impl Settings {
@@ -70,6 +71,7 @@ impl Settings {
             .set_default("nym.enabled", false)?
             .set_default("nym.binary_path", "bin/nym-socks5-client.exe")?
             .set_default("nym.socks_port", 1080)?
+            .set_default("nym.upstream_provider", None::<String>)?
             // Merge with config file
             .add_source(File::with_name("chimera").required(false))
             // Merge with environment variables (e.g. CHIMERA_SERVER_PORT=9090)
