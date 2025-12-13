@@ -19,6 +19,7 @@ http_proxy_port = 4444
 enabled = false
 binary_path = "bin/lokinet.exe"
 dns_port = 1053
+socks_port = 1090
 
 [nym]
 enabled = false

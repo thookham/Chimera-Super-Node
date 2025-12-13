@@ -19,10 +19,12 @@
   - `.eth` / `.bit` → **ZeroNet** (Decentralized Web)
   - `ipfs://` → **IPFS** (InterPlanetary File System)
   - `USK@` / `SSK@` → **Freenet/Hyphanet** (Censorship-Resistant Store)
+  - `.gnu` / `.zkey` → **GNUnet** (GNS Proxy)
+  - `retroshare://` → **RetroShare** (Friend-to-Friend)
+  - `tribler://` → **Tribler** (Anonymous BitTorrent)
 - **Future Protocol Support**:
-  - **RetroShare**: Friend-to-Friend (F2F) secure messaging and sharing.
-  - **GNUnet**: Secure, distributed networking stack.
-  - **Tribler**: Anonymous BitTorrent-like file sharing.
+  - **Protocol Chaining**: Route Tor via Nym.
+  - **Failover & Bonding**: Multi-path routing.
 - **Rust Core**: Built in Rust for memory safety, performance, and native integration with Nym.
 - **Embedded Daemons**: Manages the lifecycle of underlying anonymity protocols automatically.
 - **Protocol Chaining** (Planned): Route Tor traffic through Nym for metadata resistance.

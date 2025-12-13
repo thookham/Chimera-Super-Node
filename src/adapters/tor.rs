@@ -1,13 +1,13 @@
-use async_trait::async_trait;
-use anyhow::Result;
-use log::{info, warn};
-use tokio::process::{Command, Child};
-use std::process::Stdio;
-use std::path::Path;
-use std::sync::Arc;
-use tokio::sync::Mutex;
-use crate::config::TorSettings;
 use super::ProtocolAdapter;
+use crate::config::TorSettings;
+use anyhow::Result;
+use async_trait::async_trait;
+use log::{info, warn};
+use std::path::Path;
+use std::process::Stdio;
+use std::sync::Arc;
+use tokio::process::{Child, Command};
+use tokio::sync::Mutex;
 
 pub struct TorAdapter {
     settings: TorSettings,
@@ -31,7 +31,10 @@ impl ProtocolAdapter for TorAdapter {
         }
 
         if !Path::new(&self.settings.binary_path).exists() {
-            warn!("Tor binary not found at {}. Skipping Tor start.", self.settings.binary_path);
+            warn!(
+                "Tor binary not found at {}. Skipping Tor start.",
+                self.settings.binary_path
+            );
             return Ok(());
         }
 
@@ -49,7 +52,7 @@ impl ProtocolAdapter for TorAdapter {
 
         let mut proc_lock = self.process.lock().await;
         *proc_lock = Some(child);
-        
+
         info!("Tor started successfully.");
         Ok(())
     }

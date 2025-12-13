@@ -1,4 +1,5 @@
 use log::{debug, error, info};
+use reqwest;
 use std::net::SocketAddr;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::{TcpListener, TcpStream};
@@ -9,16 +10,52 @@ pub struct Socks5Server {
     i2p_proxy: SocketAddr,
     lokinet_proxy: SocketAddr,
     nym_proxy: SocketAddr,
+    ipfs_proxy: SocketAddr,
+    zeronet_proxy: SocketAddr,
+    freenet_proxy: SocketAddr,
+    gnunet_proxy: SocketAddr,
+    retroshare_proxy: SocketAddr, // Typically HTTP/API
+    tribler_proxy: SocketAddr,    // Typically REST API
 }
 
 impl Socks5Server {
-    pub fn new(port: u16, tor_port: u16, i2p_port: u16, lokinet_port: u16, nym_port: u16) -> Self {
+    #[allow(clippy::too_many_arguments)]
+    pub fn new(
+        port: u16,
+        tor_port: u16,
+        i2p_port: u16,
+        lokinet_port: u16,
+        nym_port: u16,
+        ipfs_port: u16,
+        zeronet_port: u16,
+        freenet_port: u16,
+        gnunet_port: u16,
+        retroshare_url: String, // parse port from URL
+        tribler_url: String,    // parse port from URL
+    ) -> Self {
+        // Simple helper to parse port from URL or default
+        let get_port = |url: &str, def: u16| -> u16 {
+            url.parse::<reqwest::Url>()
+                .ok()
+                .and_then(|u| u.port())
+                .unwrap_or(def)
+        };
+
+        let rs_port = get_port(&retroshare_url, 9090);
+        let tr_port = get_port(&tribler_url, 8085);
+
         Self {
             port,
             tor_proxy: SocketAddr::from(([127, 0, 0, 1], tor_port)),
             i2p_proxy: SocketAddr::from(([127, 0, 0, 1], i2p_port)),
             lokinet_proxy: SocketAddr::from(([127, 0, 0, 1], lokinet_port)),
             nym_proxy: SocketAddr::from(([127, 0, 0, 1], nym_port)),
+            ipfs_proxy: SocketAddr::from(([127, 0, 0, 1], ipfs_port)),
+            zeronet_proxy: SocketAddr::from(([127, 0, 0, 1], zeronet_port)),
+            freenet_proxy: SocketAddr::from(([127, 0, 0, 1], freenet_port)),
+            gnunet_proxy: SocketAddr::from(([127, 0, 0, 1], gnunet_port)),
+            retroshare_proxy: SocketAddr::from(([127, 0, 0, 1], rs_port)),
+            tribler_proxy: SocketAddr::from(([127, 0, 0, 1], tr_port)),
         }
     }
 
@@ -33,9 +70,20 @@ impl Socks5Server {
             let i2p = self.i2p_proxy;
             let lokinet = self.lokinet_proxy;
             let nym = self.nym_proxy;
+            let ipfs = self.ipfs_proxy;
+            let zeronet = self.zeronet_proxy;
+            let freenet = self.freenet_proxy;
+            let gnunet = self.gnunet_proxy;
+            let retroshare = self.retroshare_proxy;
+            let tribler = self.tribler_proxy;
 
             tokio::spawn(async move {
-                if let Err(e) = handle_connection(socket, tor, i2p, lokinet, nym).await {
+                if let Err(e) = handle_connection(
+                    socket, tor, i2p, lokinet, nym, ipfs, zeronet, freenet, gnunet, retroshare,
+                    tribler,
+                )
+                .await
+                {
                     error!("Connection error: {}", e);
                 }
             });
@@ -43,12 +91,19 @@ impl Socks5Server {
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 async fn handle_connection(
     mut client: TcpStream,
     tor: SocketAddr,
     i2p: SocketAddr,
     lokinet: SocketAddr,
     nym: SocketAddr,
+    ipfs: SocketAddr,
+    zeronet: SocketAddr,
+    freenet: SocketAddr,
+    gnunet: SocketAddr,
+    retroshare: SocketAddr,
+    tribler: SocketAddr,
 ) -> anyhow::Result<()> {
     // 1. Handshake
     let mut buf = [0u8; 2];
@@ -118,14 +173,35 @@ async fn handle_connection(
     } else if target_host.ends_with(".nym") {
         debug!("Routing {} to Nym", target_host);
         nym
+    } else if target_host.ends_with(".bit") {
+        debug!("Routing {} to ZeroNet", target_host);
+        zeronet
+    } else if target_host.ends_with(".eth") || target_host.ends_with(".ipfs") {
+        debug!("Routing {} to IPFS", target_host);
+        ipfs
+    } else if target_host.starts_with("USK@")
+        || target_host.starts_with("SSK@")
+        || target_host.ends_with(".freenet")
+    {
+        debug!("Routing {} to Freenet", target_host);
+        freenet
+    } else if target_host.ends_with(".gnu") || target_host.ends_with(".zkey") {
+        debug!("Routing {} to GNUnet", target_host);
+        gnunet
+    } else if target_host.contains("retroshare") {
+        // Simple heuristic
+        debug!("Routing {} to RetroShare", target_host);
+        retroshare
+    } else if target_host.contains("tribler") {
+        // Simple heuristic
+        debug!("Routing {} to Tribler", target_host);
+        tribler
     } else {
-        // Default to Tor for everything else (safest default)
-        // Or we could route clearnet directly? For now, Tor.
         debug!("Routing {} to Tor (Default)", target_host);
         tor
     };
 
-    // 4. Connect to Upstream (Tor/I2P)
+    // 4. Connect to Upstream
     let mut upstream = TcpStream::connect(upstream_addr).await?;
 
     // Send success reply to client
@@ -133,48 +209,54 @@ async fn handle_connection(
         .write_all(&[0x05, 0x00, 0x00, 0x01, 0, 0, 0, 0, 0, 0])
         .await?;
 
-    // Replay the SOCKS5 handshake to the upstream proxy?
-    // No, Tor/I2P are SOCKS proxies themselves. We need to handshake with THEM.
-    // Handshake with Upstream
-    upstream.write_all(&[0x05, 0x01, 0x00]).await?; // Hello
-    let mut up_buf = [0u8; 2];
-    upstream.read_exact(&mut up_buf).await?; // Auth response
+    let is_socks_upstream = target_host.ends_with(".onion")
+        || target_host.ends_with(".i2p")
+        || target_host.ends_with(".loki")
+        || target_host.ends_with(".nym")
+        || target_host.ends_with(".gnu"); // GNUnet GNS proxy is SOCKS
 
-    // Send Connect Request to Upstream
-    // We need to reconstruct the packet we received or build a new one
-    // For simplicity, let's rebuild it.
-    let mut packet = vec![0x05, 0x01, 0x00]; // Ver, Cmd, Rsv
-    if addr_type == 0x03 {
-        packet.push(0x03);
-        packet.push(target_host.len() as u8);
-        packet.extend_from_slice(target_host.as_bytes());
+    if is_socks_upstream {
+        // Handshake with SOCKS5 Upstream
+        upstream.write_all(&[0x05, 0x01, 0x00]).await?;
+        let mut up_buf = [0u8; 2];
+        upstream.read_exact(&mut up_buf).await?;
+
+        // Send Connect Request to Upstream
+        let mut packet = vec![0x05, 0x01, 0x00];
+        if addr_type == 0x03 {
+            packet.push(0x03);
+            packet.push(target_host.len() as u8);
+            packet.extend_from_slice(target_host.as_bytes());
+        } else {
+            packet.push(0x01);
+            // Re-using dummy logic from before (assumes we have IPv4 in target_host if addr_type=1 which requires string parsing if we didn't save bytes)
+            // Ideally we pass bytes.
+            packet.push(0x03);
+            packet.push(target_host.len() as u8);
+            packet.extend_from_slice(target_host.as_bytes());
+        }
+        packet.extend_from_slice(&target_port.to_be_bytes());
+
+        upstream.write_all(&packet).await?;
+
+        // Read Upstream Reply
+        let mut rep_head = [0u8; 4];
+        upstream.read_exact(&mut rep_head).await?;
+        let up_addr_type = rep_head[3];
+        match up_addr_type {
+            0x01 => {
+                let mut buf = [0u8; 6];
+                upstream.read_exact(&mut buf).await?;
+            }
+            0x03 => {
+                let len = upstream.read_u8().await?;
+                let mut buf = vec![0u8; len as usize + 2];
+                upstream.read_exact(&mut buf).await?;
+            }
+            _ => {}
+        }
     } else {
-        // Fallback for IPv4 (not fully implemented in this snippet for brevity)
-        packet.push(0x01);
-        // ...
-    }
-    packet.extend_from_slice(&target_port.to_be_bytes());
-
-    upstream.write_all(&packet).await?;
-
-    // Read Upstream Reply
-    // We discard the reply details and just pipe data after this
-    // But we need to consume the reply packet.
-    // SOCKS5 reply is variable length.
-    let mut rep_head = [0u8; 4];
-    upstream.read_exact(&mut rep_head).await?;
-    let up_addr_type = rep_head[3];
-    match up_addr_type {
-        0x01 => {
-            let mut buf = [0u8; 6];
-            upstream.read_exact(&mut buf).await?;
-        }
-        0x03 => {
-            let len = upstream.read_u8().await?;
-            let mut buf = vec![0u8; len as usize + 2];
-            upstream.read_exact(&mut buf).await?;
-        }
-        _ => {}
+        debug!("Connected to HTTP/API upstream: {}", upstream_addr);
     }
 
     // 5. Pipe Data

@@ -20,6 +20,9 @@ async-trait = "0.1"
 # socks5-proto = "0.3" # We might implement our own or use a crate later
 nym-sdk = { git = "https://github.com/nymtech/nym.git", branch = "develop" }
 ed25519-zebra = { version = "4.1.0", features = ["alloc"] }
+reqwest = { version = "0.11", features = ["json"] }
+serde_json = "1.0"
+url = "2.5"
 
 [build-dependencies]
 cmake = "0.1" # For building C/C++ submodules

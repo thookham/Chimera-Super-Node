@@ -32,7 +32,9 @@ async fn main() -> anyhow::Result<()> {
 
     // 2. Initialize Logger
     if std::env::var("RUST_LOG").is_err() {
-        std::env::set_var("RUST_LOG", &settings.server.log_level);
+        unsafe {
+            std::env::set_var("RUST_LOG", &settings.server.log_level);
+        }
     }
     env_logger::init();
 
@@ -42,12 +44,18 @@ async fn main() -> anyhow::Result<()> {
         settings.server.host, settings.server.port
     );
 
-    // 3. Start Sidecar Processes (Tor, I2P, Nym, Lokinet)
+    // 3. Start Sidecar Processes (Tor, I2P, Nym, Lokinet, IPFS, ZeroNet, Freenet)
     let pm = ProcessManager::new(
         settings.tor.clone(),
         settings.i2p.clone(),
         settings.nym.clone(),
         settings.lokinet.clone(),
+        settings.ipfs.clone(),
+        settings.zeronet.clone(),
+        settings.freenet.clone(),
+        settings.retroshare.clone(),
+        settings.gnunet.clone(),
+        settings.tribler.clone(),
     );
     if let Err(e) = pm.start_processes().await {
         error!("Failed to start background processes: {}", e);
@@ -60,6 +68,12 @@ async fn main() -> anyhow::Result<()> {
         settings.i2p.socks_port,
         settings.lokinet.socks_port,
         settings.nym.socks_port,
+        settings.ipfs.gateway_port,
+        settings.zeronet.port,
+        settings.freenet.fproxy_port,
+        settings.gnunet.socks_port,
+        settings.retroshare.api_url,
+        settings.tribler.api_url,
     );
 
     if let Err(e) = server.run().await {

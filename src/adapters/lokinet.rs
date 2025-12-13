@@ -31,6 +31,8 @@ impl ProtocolAdapter for LokinetAdapter {
             return Ok(());
         }
 
+        warn!("⚠️  Lokinet integration is EXPERIMENTAL. VPN/Tun mode may not fully support SOCKS5 proxy routing.");
+
         if !Path::new(&self.settings.binary_path).exists() {
             warn!(
                 "Lokinet binary not found at {}. Skipping Lokinet start.",
@@ -66,7 +68,10 @@ impl ProtocolAdapter for LokinetAdapter {
         let mut proc_lock = self.process.lock().await;
         *proc_lock = Some(child);
 
-        info!("Lokinet started successfully.");
+        info!(
+            "Lokinet started successfully (SOCKS5 on port {}).",
+            self.settings.socks_port
+        );
         Ok(())
     }
 
@@ -80,11 +85,9 @@ impl ProtocolAdapter for LokinetAdapter {
     }
 
     fn get_proxy_addr(&self) -> String {
-        // Lokinet is usually a VPN/Tun interface, not a SOCKS proxy.
-        // But for consistency, we might return a DNS port or a placeholder.
-        // Or maybe we need to implement a SOCKS-to-Lokinet bridge.
-        // For now, returning empty as it's not a standard SOCKS proxy.
-        String::new()
+        // Return the configured SOCKS5 port for Lokinet
+        // Note: Requires exit node configuration in lokinet.ini for full SOCKS5 support
+        format!("127.0.0.1:{}", self.settings.socks_port)
     }
 
     async fn is_healthy(&self) -> bool {

@@ -32,17 +32,72 @@ socks_port = 4447
 http_proxy_port = 4444
 
 [lokinet]
-# Enable Lokinet integration
+# Enable Lokinet integration (EXPERIMENTAL - VPN mode, not full SOCKS5)
 enabled = false
 # Path to the Lokinet binary
 binary_path = "bin/lokinet.exe"
 # DNS port for .loki address resolution
 dns_port = 1053
+# SOCKS5 port (requires exit node configuration)
+socks_port = 1090
 
 [nym]
 # Enable Nym Mixnet integration
 enabled = false
-# Path to the Nym client binary
+# Path to the Nym client binary (legacy, now uses native SDK)
 binary_path = "bin/nym-socks5-client.exe"
-# SOCKS5 port for Nym
+# SOCKS5 port for Nym client
 socks_port = 1080
+# REQUIRED: Network Requester address for SOCKS5 traffic
+# Get a valid address from: https://explorer.nymtech.net/
+# Format: ClientID@GatewayID
+# upstream_provider = "INSERT_NETWORK_REQUESTER_ADDRESS_HERE"
+
+[ipfs]
+# Enable IPFS integration (requires Kubo/go-ipfs daemon)
+enabled = false
+# Kubo API URL
+api_url = "http://127.0.0.1:5001"
+# Kubo Gateway port (HTTP)
+gateway_port = 8080
+
+[zeronet]
+# Enable ZeroNet integration (requires ZeroNet daemon)
+enabled = false
+# ZeroNet Proxy URL
+proxy_url = "http://127.0.0.1:43110"
+# ZeroNet Proxy Port
+port = 43110
+
+[freenet]
+# Enable Freenet/Hyphanet integration (requires Hyphanet node)
+enabled = false
+# Freenet node host
+host = "127.0.0.1"
+# FCP (Freenet Client Protocol) port
+fcp_port = 9481
+# FProxy (HTTP) port
+fproxy_port = 8888
+
+[retroshare]
+# Enable RetroShare integration via JSON API
+enabled = false
+# RetroShare JSON API URL
+api_url = "http://127.0.0.1:9090"
+# API Authentication (Optional)
+# user = "admin"
+# password = "password"
+
+[gnunet]
+# Enable GNUnet integration (requires gnunet-arm)
+enabled = false
+# GNS Proxy port (SOCKS if configured via gnunet-gns-proxy)
+socks_port = 2080
+
+[tribler]
+# Enable Tribler integration via REST API
+enabled = false
+# Tribler API URL
+api_url = "http://127.0.0.1:8085"
+# API Key
+# api_key = "INSERT_API_KEY_HERE"

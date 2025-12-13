@@ -1,13 +1,13 @@
-use async_trait::async_trait;
-use anyhow::Result;
-use log::{info, warn};
-use tokio::process::{Command, Child};
-use std::process::Stdio;
-use std::path::Path;
-use std::sync::Arc;
-use tokio::sync::Mutex;
-use crate::config::I2pSettings;
 use super::ProtocolAdapter;
+use crate::config::I2pSettings;
+use anyhow::Result;
+use async_trait::async_trait;
+use log::{info, warn};
+use std::path::Path;
+use std::process::Stdio;
+use std::sync::Arc;
+use tokio::process::{Child, Command};
+use tokio::sync::Mutex;
 
 pub struct I2pAdapter {
     settings: I2pSettings,
@@ -31,14 +31,20 @@ impl ProtocolAdapter for I2pAdapter {
         }
 
         if !Path::new(&self.settings.binary_path).exists() {
-            warn!("I2PD binary not found at {}. Skipping I2P start.", self.settings.binary_path);
+            warn!(
+                "I2PD binary not found at {}. Skipping I2P start.",
+                self.settings.binary_path
+            );
             return Ok(());
         }
 
         info!("Starting I2PD...");
         let child = Command::new(&self.settings.binary_path)
             .arg(format!("--socksproxy.port={}", self.settings.socks_port))
-            .arg(format!("--httpproxy.port={}", self.settings.http_proxy_port))
+            .arg(format!(
+                "--httpproxy.port={}",
+                self.settings.http_proxy_port
+            ))
             .arg("--datadir=data/i2p")
             .stdout(Stdio::null())
             .stderr(Stdio::null())
@@ -46,7 +52,7 @@ impl ProtocolAdapter for I2pAdapter {
 
         let mut proc_lock = self.process.lock().await;
         *proc_lock = Some(child);
-        
+
         info!("I2PD started successfully.");
         Ok(())
     }

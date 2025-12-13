@@ -8,6 +8,12 @@ pub struct Settings {
     pub i2p: I2pSettings,
     pub lokinet: LokinetSettings,
     pub nym: NymSettings,
+    pub ipfs: IpfsSettings,
+    pub zeronet: ZeroNetSettings,
+    pub freenet: FreenetSettings,
+    pub retroshare: RetroShareSettings,
+    pub gnunet: GnunetSettings,
+    pub tribler: TriblerSettings,
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -49,6 +55,49 @@ pub struct NymSettings {
     pub upstream_provider: Option<String>,
 }
 
+#[derive(Debug, Deserialize, Clone)]
+pub struct IpfsSettings {
+    pub enabled: bool,
+    pub api_url: String,
+    pub gateway_port: u16,
+}
+
+#[derive(Debug, Deserialize, Clone)]
+pub struct ZeroNetSettings {
+    pub enabled: bool,
+    pub proxy_url: String,
+    pub port: u16,
+}
+
+#[derive(Debug, Deserialize, Clone)]
+pub struct FreenetSettings {
+    pub enabled: bool,
+    pub host: String,
+    pub fcp_port: u16,
+    pub fproxy_port: u16,
+}
+
+#[derive(Debug, Deserialize, Clone)]
+pub struct RetroShareSettings {
+    pub enabled: bool,
+    pub api_url: String,
+    pub user: Option<String>,
+    pub password: Option<String>,
+}
+
+#[derive(Debug, Deserialize, Clone)]
+pub struct GnunetSettings {
+    pub enabled: bool,
+    pub socks_port: u16,
+}
+
+#[derive(Debug, Deserialize, Clone)]
+pub struct TriblerSettings {
+    pub enabled: bool,
+    pub api_url: String,
+    pub api_key: Option<String>,
+}
+
 impl Settings {
     pub fn new() -> Result<Self, ConfigError> {
         let s = Config::builder()
@@ -72,6 +121,27 @@ impl Settings {
             .set_default("nym.binary_path", "bin/nym-socks5-client.exe")?
             .set_default("nym.socks_port", 1080)?
             .set_default("nym.upstream_provider", None::<String>)?
+            // Phase 2.5: Decentralized Web
+            .set_default("ipfs.enabled", false)?
+            .set_default("ipfs.api_url", "http://127.0.0.1:5001")?
+            .set_default("ipfs.gateway_port", 8080)?
+            .set_default("zeronet.enabled", false)?
+            .set_default("zeronet.proxy_url", "http://127.0.0.1:43110")?
+            .set_default("zeronet.port", 43110)?
+            .set_default("freenet.enabled", false)?
+            .set_default("freenet.host", "127.0.0.1")?
+            .set_default("freenet.fcp_port", 9481)?
+            .set_default("freenet.fproxy_port", 8888)?
+            // Extended Deferred Protocols
+            .set_default("retroshare.enabled", false)?
+            .set_default("retroshare.api_url", "http://127.0.0.1:9090")?
+            .set_default("retroshare.user", None::<String>)?
+            .set_default("retroshare.password", None::<String>)?
+            .set_default("gnunet.enabled", false)?
+            .set_default("gnunet.socks_port", 2080)? // Placeholder default
+            .set_default("tribler.enabled", false)?
+            .set_default("tribler.api_url", "http://127.0.0.1:8085")?
+            .set_default("tribler.api_key", None::<String>)?
             // Merge with config file
             .add_source(File::with_name("chimera").required(false))
             // Merge with environment variables (e.g. CHIMERA_SERVER_PORT=9090)

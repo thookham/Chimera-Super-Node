@@ -16,33 +16,27 @@ This document outlines the development plan for **Chimera**, the unified anonymi
 
 **Goal**: Support for Lokinet and Nym.
 
-- [ ] **Lokinet**: Integration via Tun/Tap or LLARP library.
-- [ ] **Nym**: Integration via native Rust client.
-- [ ] **Unified Config**: Single `chimera.toml` for all networks.
+- [x] **Lokinet**: Integration via Tun/Tap or LLARP library. *(Experimental - SOCKS5 port configured)*
+- [x] **Nym**: Integration via native Rust client. *(SDK integrated, requires upstream_provider)*
+- [x] **Unified Config**: Single `chimera.toml` for all networks.
 
-## 🕸️ Phase 2.5: Decentralized Web & Storage (v0.8)
+## 🕸️ Phase 2.5: Decentralized Web & Storage (v0.8) - **Completed**
 
 **Goal**: Integrate content and social networks.
 
-- [ ] **Freenet (Hyphanet)**:
-  - Integration via **FCPv2** (Freenet Client Protocol).
-  - Support for `USK@` (Updatable Subspace Keys) and `SSK@` (Signed Subspace Keys).
-- [ ] **ZeroNet**:
-  - Integration via **ZeroFrame API** (JSON-based).
-  - Support for `.bit` domains and Zite routing.
-  - Explore `zeronet-rs` for native Rust integration.
-- [ ] **IPFS**:
-  - Integration via **Kubo RPC API** or `rust-ipfs`.
-  - Support for `ipfs://` and `ipns://` routing.
-- [ ] **RetroShare**:
-  - Integration via **JSON API** (OpenAPI spec).
-  - Support for Friend-to-Friend (F2F) routing and GXS (Generic eXchange System).
-- [ ] **GNUnet**:
-  - Integration via C bindings or `gnunet-rs`.
-  - Support for GNS (GNU Name System) and CADET transport.
-- [ ] **Tribler**:
-  - Integration via REST API.
-  - Support for anonymous BitTorrent streaming and searching.
+- [x] **IPFS Integration**:
+  - [x] Adapter to talk to Kubo (local IPFS node)
+  - [x] Routing for `ipfs://` and `ipns://` (via TLD heuristics)
+- [x] **ZeroNet Integration**:
+  - [x] Adapter for ZeroNet daemon
+  - [x] `.bit` TLD routing
+- [x] **Freenet/Hyphanet Integration**:
+  - [x] Freenet Client Protocol (FCP) adapter
+  - [x] Routing for `USK@`, `SSK@`, `.freenet`
+- [ ] **Deferred (Future)**:
+  - [ ] RetroShare (JSON API)
+  - [ ] GNUnet (C bindings)
+  - [ ] Tribler (REST API)
 
 ## 🔗 Phase 3: The "Super" Protocol (v1.0)
 

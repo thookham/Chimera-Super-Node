@@ -1,10 +1,16 @@
-pub mod nym;
-pub mod lokinet;
-pub mod tor;
+pub mod freenet;
+pub mod gnunet;
 pub mod i2p;
+pub mod ipfs;
+pub mod lokinet;
+pub mod nym;
+pub mod retroshare;
+pub mod tor;
+pub mod tribler;
+pub mod zeronet;
 
-use async_trait::async_trait;
 use anyhow::Result;
+use async_trait::async_trait;
 
 #[async_trait]
 pub trait ProtocolAdapter {
