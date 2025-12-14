@@ -140,6 +140,40 @@ Research from 24 privacy protocols to inform Chimera GUI design.
 
 ---
 
+## Chimera Smart Routing Implementation
+
+### Supported TLDs and Routing
+
+| Domain/Pattern | Routes To | Protocol Type |
+|---------------|-----------|---------------|
+| `*.onion` | Tor Network (port 9052) | SOCKS5 |
+| `*.i2p` | I2P Network (port 4447) | SOCKS5 |
+| `*.loki` | Lokinet (port 1090) | SOCKS5 |
+| `*.nym` | Nym Mixnet (port 1080) | SOCKS5 |
+| `*.bit` | ZeroNet (port 43110) | HTTP |
+| `*.eth`, `*.ipfs` | IPFS Gateway (port 8080) | HTTP |
+| `USK@*`, `SSK@*` | Freenet (port 8888) | FCP |
+| `*.gnu`, `*.zkey` | GNUnet (port 2086) | SOCKS5 |
+| `retroshare://*` | RetroShare (port 9090) | HTTP |
+| `tribler://*` | Tribler (port 8085) | HTTP |
+| Other domains | Tor (default) | SOCKS5 |
+
+### How It Works
+
+1. **Browser connects** to Chimera on `127.0.0.1:9050` (SOCKS5)
+2. **Chimera parses** the target domain from the SOCKS5 request
+3. **Smart Router** (`resolve_upstream`) selects the correct upstream proxy
+4. **For SOCKS5 upstreams** (Tor, I2P, etc.): Re-handshakes with upstream
+5. **For HTTP upstreams** (IPFS, ZeroNet): Proxies HTTP directly
+6. **Data pipes bidirectionally** using `tokio::io::copy`
+
+### Test Coverage
+
+- 11 unit tests verify routing logic
+- Tests: `.onion`, `.i2p`, `.loki`, `.nym`, `.eth`, `.bit`, `USK@`, `.gnu`, `retroshare://`, `tribler://`, default
+
+---
+
 ## Key Takeaways for Chimera GUI
 
 1. **Privacy First**: Minimal logging, clear data on exit
