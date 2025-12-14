@@ -180,6 +180,102 @@ function SettingsModal({ settings, proxyPort, onSave, onClose }: SettingsModalPr
   );
 }
 
+// Log entry type from backend
+interface LogEntry {
+  timestamp: string;
+  level: string;
+  message: string;
+}
+
+interface LogViewerProps {
+  onClose: () => void;
+}
+
+function LogViewer({ onClose }: LogViewerProps) {
+  const [logs, setLogs] = useState<LogEntry[]>([]);
+  const [autoRefresh, setAutoRefresh] = useState(true);
+
+  // Fetch logs
+  const fetchLogs = async () => {
+    try {
+      const result = await invoke<LogEntry[]>("get_logs");
+      setLogs(result);
+    } catch (e) {
+      console.error("Failed to fetch logs:", e);
+    }
+  };
+
+  // Clear logs
+  const handleClear = async () => {
+    try {
+      await invoke("clear_logs");
+      setLogs([]);
+    } catch (e) {
+      console.error("Failed to clear logs:", e);
+    }
+  };
+
+  // Initial fetch and auto-refresh
+  useEffect(() => {
+    fetchLogs();
+    if (autoRefresh) {
+      const interval = setInterval(fetchLogs, 2000);
+      return () => clearInterval(interval);
+    }
+  }, [autoRefresh]);
+
+  const getLevelColor = (level: string) => {
+    switch (level.toLowerCase()) {
+      case "error": return "text-red-400";
+      case "warn": return "text-yellow-400";
+      case "info": return "text-blue-400";
+      case "debug": return "text-gray-400";
+      default: return "text-white";
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50" onClick={onClose}>
+      <div className="glass-card p-6 w-[700px] h-[500px] flex flex-col" onClick={(e) => e.stopPropagation()}>
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-bold">📜 Logs</h2>
+          <div className="flex items-center gap-3">
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={autoRefresh}
+                onChange={(e) => setAutoRefresh(e.target.checked)}
+                className="w-4 h-4"
+              />
+              Auto-refresh
+            </label>
+            <button onClick={handleClear} className="btn-secondary text-sm">Clear</button>
+            <button onClick={onClose} className="text-gray-400 hover:text-white text-2xl">&times;</button>
+          </div>
+        </div>
+
+        <div className="flex-1 bg-gray-900 rounded-lg p-3 overflow-auto font-mono text-xs">
+          {logs.length === 0 ? (
+            <p className="text-gray-500 text-center mt-10">No logs yet. Start the daemon to see activity.</p>
+          ) : (
+            logs.map((log, i) => (
+              <div key={i} className="flex gap-2 mb-1 hover:bg-white/5 p-1 rounded">
+                <span className="text-gray-500">{log.timestamp}</span>
+                <span className={`font-bold uppercase w-12 ${getLevelColor(log.level)}`}>{log.level}</span>
+                <span className="text-gray-200">{log.message}</span>
+              </div>
+            ))
+          )}
+        </div>
+
+        <div className="mt-3 text-xs text-gray-500 text-right">
+          {logs.length} log entries (max 500)
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function App() {
   const [protocolSettings, setProtocolSettings] = useState<Record<string, boolean>>(loadSettings);
   const [proxyPort, setProxyPort] = useState(9050);
@@ -187,6 +283,7 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showSettings, setShowSettings] = useState(false);
+  const [showLogs, setShowLogs] = useState(false);
 
   // Auto-start on mount (all enabled protocols attempt to start)
   useEffect(() => {
@@ -238,6 +335,7 @@ function App() {
           onClose={() => setShowSettings(false)}
         />
       )}
+      {showLogs && <LogViewer onClose={() => setShowLogs(false)} />}
 
       {/* Header */}
       <header className="flex items-center justify-between mb-6">
@@ -323,7 +421,7 @@ function App() {
       {/* Footer */}
       <footer className="flex gap-3">
         <button className="btn-secondary" onClick={() => setShowSettings(true)}>⚙️ Settings</button>
-        <button className="btn-secondary">📜 Logs</button>
+        <button className="btn-secondary" onClick={() => setShowLogs(true)}>📜 Logs</button>
         <button className="btn-secondary">ℹ️ About</button>
       </footer>
     </div>

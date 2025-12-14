@@ -26,4 +26,5 @@ tokio = { version = "1", features = ["full"] }
 
 # Link to parent chimera_node library
 chimera_node = { path = "../../" }
+chrono = "0.4.42"
 

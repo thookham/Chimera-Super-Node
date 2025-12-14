@@ -189,6 +189,35 @@ async fn get_status(
     Ok(status)
 }
 
+/// Get logs from the log buffer
+#[tauri::command]
+async fn get_logs(state: State<'_, Arc<Mutex<AppState>>>) -> Result<Vec<LogEntry>, String> {
+    let app_state = state.lock().await;
+    Ok(app_state.logs.clone())
+}
+
+/// Clear logs
+#[tauri::command]
+async fn clear_logs(state: State<'_, Arc<Mutex<AppState>>>) -> Result<String, String> {
+    let mut app_state = state.lock().await;
+    app_state.logs.clear();
+    Ok("Logs cleared".into())
+}
+
+/// Add a log entry (internal helper, also exposed for testing)
+fn add_log_entry(logs: &mut Vec<LogEntry>, level: &str, message: &str) {
+    let timestamp = Local::now().format("%H:%M:%S").to_string();
+    logs.push(LogEntry {
+        timestamp,
+        level: level.to_string(),
+        message: message.to_string(),
+    });
+    // Keep only last 500 entries
+    if logs.len() > 500 {
+        logs.remove(0);
+    }
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let app_state = Arc::new(Mutex::new(AppState::default()));
@@ -201,7 +230,9 @@ pub fn run() {
             stop_daemon,
             get_status,
             get_proxy_config,
-            set_proxy_port
+            set_proxy_port,
+            get_logs,
+            clear_logs
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
