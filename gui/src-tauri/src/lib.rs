@@ -1,22 +1,39 @@
 use chimera_node::config::Settings;
 use chimera_node::process_manager::ProcessManager;
+use chimera_node::socks5::Socks5Server;
+use chrono::Local;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::Arc;
 use tauri::State;
 use tokio::sync::Mutex;
+use tokio::task::JoinHandle;
+
+/// Log entry for frontend display
+#[derive(Serialize, Deserialize, Clone)]
+pub struct LogEntry {
+    timestamp: String,
+    level: String,
+    message: String,
+}
 
 /// Application state shared across Tauri commands
 pub struct AppState {
     pub process_manager: Option<ProcessManager>,
+    pub socks5_handle: Option<JoinHandle<()>>,
     pub running: bool,
+    pub proxy_port: u16,
+    pub logs: Vec<LogEntry>,
 }
 
 impl Default for AppState {
     fn default() -> Self {
         Self {
             process_manager: None,
+            socks5_handle: None,
             running: false,
+            proxy_port: 9050,
+            logs: Vec::new(),
         }
     }
 }
@@ -29,7 +46,37 @@ pub struct ProtocolStatus {
     port: u16,
 }
 
-/// Start all protocols (ProcessManager::start_processes)
+/// Get current proxy configuration
+#[tauri::command]
+async fn get_proxy_config(
+    state: State<'_, Arc<Mutex<AppState>>>,
+) -> Result<HashMap<String, String>, String> {
+    let app_state = state.lock().await;
+    let mut config = HashMap::new();
+    config.insert("port".to_string(), app_state.proxy_port.to_string());
+    config.insert(
+        "address".to_string(),
+        format!("127.0.0.1:{}", app_state.proxy_port),
+    );
+    config.insert("running".to_string(), app_state.running.to_string());
+    Ok(config)
+}
+
+/// Set proxy port (requires restart)
+#[tauri::command]
+async fn set_proxy_port(
+    state: State<'_, Arc<Mutex<AppState>>>,
+    port: u16,
+) -> Result<String, String> {
+    let mut app_state = state.lock().await;
+    if app_state.running {
+        return Err("Stop daemon first to change port".into());
+    }
+    app_state.proxy_port = port;
+    Ok(format!("Proxy port set to {}", port))
+}
+
+/// Start all protocols and the SOCKS5 proxy server
 #[tauri::command]
 async fn start_daemon(state: State<'_, Arc<Mutex<AppState>>>) -> Result<String, String> {
     let mut app_state = state.lock().await;
@@ -40,6 +87,7 @@ async fn start_daemon(state: State<'_, Arc<Mutex<AppState>>>) -> Result<String, 
 
     // Load settings
     let settings = Settings::new().map_err(|e| format!("Config error: {}", e))?;
+    let proxy_port = app_state.proxy_port;
 
     // Create ProcessManager
     let pm = ProcessManager::new(
@@ -56,18 +104,41 @@ async fn start_daemon(state: State<'_, Arc<Mutex<AppState>>>) -> Result<String, 
         settings.tribler.clone(),
     );
 
-    // Start all processes
+    // Start all protocol processes
     pm.start_processes()
         .await
         .map_err(|e| format!("Start error: {}", e))?;
 
+    // Create and start SOCKS5 proxy server
+    let socks5_server = Socks5Server::new(
+        proxy_port,
+        settings.tor.socks_port,
+        settings.i2p.socks_port,
+        settings.lokinet.socks_port,
+        settings.nym.socks_port,
+        settings.ipfs.gateway_port,
+        settings.zeronet.port,
+        settings.freenet.fcp_port,
+        settings.gnunet.socks_port,
+        settings.retroshare.api_url.clone(),
+        settings.tribler.api_url.clone(),
+    );
+
+    // Spawn SOCKS5 server in background task
+    let handle = tokio::spawn(async move {
+        if let Err(e) = socks5_server.run().await {
+            eprintln!("SOCKS5 server error: {}", e);
+        }
+    });
+
     app_state.process_manager = Some(pm);
+    app_state.socks5_handle = Some(handle);
     app_state.running = true;
 
-    Ok("Daemon started".into())
+    Ok(format!("Daemon started on 127.0.0.1:{}", proxy_port))
 }
 
-/// Stop all protocols
+/// Stop all protocols and SOCKS5 proxy
 #[tauri::command]
 async fn stop_daemon(state: State<'_, Arc<Mutex<AppState>>>) -> Result<String, String> {
     let mut app_state = state.lock().await;
@@ -76,8 +147,11 @@ async fn stop_daemon(state: State<'_, Arc<Mutex<AppState>>>) -> Result<String, S
         return Err("Daemon not running".into());
     }
 
-    // Note: ProcessManager doesn't have stop_processes yet, we'll just mark as stopped
-    // TODO: Implement proper shutdown
+    // Abort the SOCKS5 server task
+    if let Some(handle) = app_state.socks5_handle.take() {
+        handle.abort();
+    }
+
     app_state.process_manager = None;
     app_state.running = false;
 
@@ -93,14 +167,24 @@ async fn get_status(
 
     let mut status = HashMap::new();
     status.insert("daemon".to_string(), app_state.running);
+    status.insert("proxy".to_string(), app_state.running);
 
     // TODO: Query individual adapter health when HealthMonitor is integrated
-    status.insert("tor".to_string(), app_state.running);
-    status.insert("i2p".to_string(), app_state.running);
-    status.insert("nym".to_string(), false); // Nym often disabled by default
-    status.insert("lokinet".to_string(), false);
-    status.insert("ipfs".to_string(), false);
-    status.insert("zeronet".to_string(), false);
+    let protocols = vec![
+        "tor",
+        "i2p",
+        "nym",
+        "lokinet",
+        "ipfs",
+        "zeronet",
+        "freenet",
+        "gnunet",
+        "retroshare",
+        "tribler",
+    ];
+    for p in protocols {
+        status.insert(p.to_string(), app_state.running);
+    }
 
     Ok(status)
 }
@@ -115,7 +199,9 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             start_daemon,
             stop_daemon,
-            get_status
+            get_status,
+            get_proxy_config,
+            set_proxy_port
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

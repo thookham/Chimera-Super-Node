@@ -116,6 +116,10 @@ upstream_provider = "By...ID@GatewayID"
 
 See [ROADMAP.md](ROADMAP.md) for our detailed development plan, including upcoming features like Protocol Chaining and GUI development.
 
+## 📚 Documentation
+
+- **[Golden Nuggets](docs/GOLDEN_NUGGETS.md)**: Research from 24 privacy protocols informing Chimera's design (Tor, I2P, Nym, Lokinet, IPFS, ZeroNet, Freenet, GNUnet, Psiphon, Mysterium, Yggdrasil, WireGuard, and more).
+
 ## 🤝 Contributing
 
 We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on how to get started.
