@@ -39,6 +39,10 @@ const protocols: ProtocolStatus[] = [
   { name: "Sentinel", icon: "🛰️", status: "offline", port: 1085 },
   // Anti-censorship
   { name: "Trojan", icon: "🐴", status: "offline", port: 1086 },
+  { name: "V2Ray", icon: "🚀", status: "offline", port: 1087 },
+  // VPN & Messaging
+  { name: "WireGuard", icon: "🔐", status: "offline", port: 0 },
+  { name: "Session", icon: "💬", status: "offline", port: 0 },
 ];
 
 function ProtocolCard({ protocol, daemonRunning }: { protocol: ProtocolStatus; daemonRunning: boolean }) {

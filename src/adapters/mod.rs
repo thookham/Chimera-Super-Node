@@ -13,10 +13,13 @@ pub mod outline;
 pub mod psiphon;
 pub mod retroshare;
 pub mod sentinel;
+pub mod session;
 pub mod snowflake;
 pub mod tor;
 pub mod tribler;
 pub mod trojan;
+pub mod v2ray;
+pub mod wireguard;
 pub mod yggdrasil;
 pub mod zeronet;
 
