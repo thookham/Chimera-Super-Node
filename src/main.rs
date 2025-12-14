@@ -1,11 +1,6 @@
-mod adapters;
-mod config;
-mod process_manager;
-mod socks5;
-
-use crate::config::Settings;
-use crate::process_manager::ProcessManager;
-use crate::socks5::Socks5Server;
+use chimera_node::config::Settings;
+use chimera_node::process_manager::ProcessManager;
+use chimera_node::socks5::Socks5Server;
 use clap::Parser;
 use log::{error, info};
 

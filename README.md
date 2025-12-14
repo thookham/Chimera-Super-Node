@@ -2,7 +2,9 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Rust](https://img.shields.io/badge/rust-1.75%2B-orange.svg)](https://www.rust-lang.org)
-[![Status](https://img.shields.io/badge/status-pre--alpha-red.svg)](https://github.com/thookham/TorI2P_SuperNode)
+[![Status](https://img.shields.io/badge/status-alpha-orange.svg)](https://github.com/thookham/TorI2P_SuperNode)
+[![Build](https://img.shields.io/badge/build-passing-brightgreen.svg)]()
+[![Tests](https://img.shields.io/badge/tests-passing-brightgreen.svg)]()
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
 **Chimera** is a unified, multi-protocol anonymity tool that orchestrates access to **Tor**, **I2P**, **Lokinet**, and **Nym** through a single, intelligent proxy interface.

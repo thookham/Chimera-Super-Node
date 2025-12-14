@@ -38,7 +38,15 @@ This document outlines the development plan for **Chimera**, the unified anonymi
   - [ ] GNUnet (C bindings)
   - [ ] Tribler (REST API)
 
-## 🔗 Phase 3: The "Super" Protocol (v1.0)
+## 🧪 Phase 3: Rigorous Testing & Debugging (v0.9) - **Completed**
+
+**Goal**: Ensure stability and correctness via comprehensive test suite.
+
+- [x] **Unit Testing**: Coverage for routing logic and config parsing.
+- [x] **Integration Testing**: Mocked upstream verification for full SOCKS5 flow.
+- [x] **Architecture**: Split into Library/Binary structure for better testability.
+
+## 🔗 Phase 4: The "Super" Protocol (v1.0)
 
 **Goal**: Advanced features and protocol chaining.
 
@@ -48,7 +56,7 @@ This document outlines the development plan for **Chimera**, the unified anonymi
 - [ ] **Round-Robin**: Rotate exit networks for each request to maximize anonymity set.
 - [ ] **Identity Vault**: Encrypted storage for private keys across all networks.
 
-## 🖥️ Phase 4: User Experience (v1.5)
+## 🖥️ Phase 5: User Experience (v1.5)
 
 **Goal**: GUI and ease of use.
 
@@ -56,7 +64,7 @@ This document outlines the development plan for **Chimera**, the unified anonymi
 - [ ] **Dashboard**: Real-time traffic stats and network status.
 - [ ] **One-Click Install**: Bundled binaries for Windows, macOS, Linux.
 
-## 📱 Phase 5: Mobile (v2.0)
+## 📱 Phase 6: Mobile (v2.0)
 
 **Goal**: Android and iOS support.
 

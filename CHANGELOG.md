@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.0] - 2025-12-14
+
+### Changed
+
+- **Architecture**: Refactored `chimera_node` to split core logic into a library (`lib.rs`) and binary (`main.rs`) for better testability.
+- **SOCKS5 Server**: Derives `Clone`/`Copy` and supports dependency injection for testing.
+- **Routing Logic**: Extracted to pure function `resolve_upstream` for unit testing.
+
+### Added
+
+- **Test Suite**:
+  - **Unit Tests**: Full coverage of domain routing logic.
+  - **Integration Tests**: End-to-end verification of SOCKS5 handshake and data transfer using Mock Upstreams.
+
 ## [0.8.0] - 2025-12-13
 
 ### Added
