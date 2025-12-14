@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.0] - 2025-12-14
+
+### Added
+
+- **Phase 5: User Experience (GUI)**
+  - **Tauri 2.0 Desktop App**: Cross-platform GUI using React + TypeScript + TailwindCSS.
+  - **24 Protocol Adapters**: Full support for Tor, I2P, Nym, Lokinet, IPFS, ZeroNet, Freenet, GNUnet, RetroShare, Tribler, Yggdrasil, CJDNS, Psiphon, Lantern, Outline, Snowflake, Obfs4, Meek, Mysterium, Sentinel, Trojan, V2Ray, WireGuard, Session.
+  - **Smart Routing Proxy**: Auto-detects `.onion`, `.i2p`, `.loki`, `.nym`, `.bit`, `.eth`, `.ipfs`, `USK@`, `.gnu`, `retroshare://`, `tribler://` and routes to correct upstream.
+  - **Log Viewer**: Real-time log viewer with auto-refresh and color-coded log levels.
+  - **Settings Modal**: Configure proxy port and enable/disable protocols with sticky persistence.
+  - **Golden Nuggets Research Doc**: UI/UX patterns from 12+ protocol applications.
+- **Cross-Platform Builds**: NSIS (Windows), DMG (macOS), AppImage/deb (Linux).
+- **CSS Animations**: Glassmorphism, card hover effects, pulse/blink status indicators, loading spinner.
+- **System Tray**: Minimize to tray support.
+
+### Changed
+
+- Upgraded project to Tauri 2.0 architecture.
+- README updated with documentation section linking to Golden Nuggets.
+
 ## [1.0.0] - 2025-12-14
 
 ### Added

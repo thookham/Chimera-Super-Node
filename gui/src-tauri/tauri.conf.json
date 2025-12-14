@@ -1,7 +1,7 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "Chimera Super Node",
-  "version": "1.0.0",
+  "version": "1.5.0",
   "identifier": "com.thookham.chimera",
   "build": {
     "beforeDevCommand": "npm run dev",
@@ -17,7 +17,8 @@
         "height": 700,
         "resizable": true,
         "decorations": true,
-        "transparent": false
+        "transparent": false,
+        "center": true
       }
     ],
     "security": {
@@ -33,6 +34,11 @@
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
-    ]
+    ],
+    "windows": {
+      "nsis": {
+        "displayLanguageSelector": false
+      }
+    }
   }
 }
