@@ -1,5 +1,4 @@
 use chimera_node::socks5::Socks5Server;
-use std::net::SocketAddr;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::{TcpListener, TcpStream};
 

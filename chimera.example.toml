@@ -9,6 +9,10 @@ port = 9050
 # Logging verbosity: error, warn, info, debug, trace
 log_level = "info"
 
+# --- Phase 4: Protocol Chaining ---
+# Modes: "none", "tor_over_nym", "nym_over_tor"
+chain_mode = "none"
+
 # --- Protocol Configuration ---
 
 [tor]
@@ -20,6 +24,10 @@ binary_path = "bin/tor.exe"
 socks_port = 9052
 # Control port for Tor management
 control_port = 9051
+# Upstream SOCKS5 proxy for chaining (e.g., Nym SOCKS5 address)
+# upstream_proxy = "127.0.0.1:1080"
+# Fallback protocol if Tor is unhealthy
+# fallback_protocol = "i2p"
 
 [i2p]
 # Enable I2P integration (i2pd)

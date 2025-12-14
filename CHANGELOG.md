@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.0] - 2025-12-14
+
+### Added
+
+- **Phase 4: Super Protocol**
+  - **Protocol Chaining**: Route Tor over Nym (or vice versa) via `chain_mode` config and `--Socks5Proxy` flag.
+  - **Health Monitor**: Background task tracking adapter health for failover support.
+  - **ChainMode Enum**: `none`, `tor_over_nym`, `nym_over_tor`.
+- **Configuration**:
+  - Added `chain_mode` global setting.
+  - Added `upstream_proxy` and `fallback_protocol` to `TorSettings`.
+
+### Changed
+
+- **ProcessManager**: Chain-aware startup order (Nym before Tor when chaining).
+
 ## [0.9.0] - 2025-12-14
 
 ### Changed

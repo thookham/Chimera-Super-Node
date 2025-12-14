@@ -4,12 +4,13 @@ use crate::adapters::{
     tribler::TriblerAdapter, zeronet::ZeroNetAdapter, ProtocolAdapter,
 };
 use crate::config::{
-    FreenetSettings, GnunetSettings, I2pSettings, IpfsSettings, LokinetSettings, NymSettings,
-    RetroShareSettings, TorSettings, TriblerSettings, ZeroNetSettings,
+    ChainMode, FreenetSettings, GnunetSettings, I2pSettings, IpfsSettings, LokinetSettings,
+    NymSettings, RetroShareSettings, TorSettings, TriblerSettings, ZeroNetSettings,
 };
-use log::error;
+use log::{error, info};
 
 pub struct ProcessManager {
+    chain_mode: ChainMode,
     tor_adapter: TorAdapter,
     i2p_adapter: I2pAdapter,
     nym_adapter: NymAdapter,
@@ -25,6 +26,7 @@ pub struct ProcessManager {
 impl ProcessManager {
     #[allow(clippy::too_many_arguments)]
     pub fn new(
+        chain_mode: ChainMode,
         tor: TorSettings,
         i2p: I2pSettings,
         nym: NymSettings,
@@ -37,6 +39,7 @@ impl ProcessManager {
         tribler: TriblerSettings,
     ) -> Self {
         Self {
+            chain_mode,
             tor_adapter: TorAdapter::new(tor),
             i2p_adapter: I2pAdapter::new(i2p),
             nym_adapter: NymAdapter::new(nym),
@@ -51,15 +54,43 @@ impl ProcessManager {
     }
 
     pub async fn start_processes(&self) -> anyhow::Result<()> {
-        // Start all adapters
-        if let Err(e) = self.tor_adapter.start().await {
-            error!("Failed to start Tor: {}", e);
+        // Phase 4: Protocol Chaining - Start dependencies first
+        match self.chain_mode {
+            ChainMode::TorOverNym => {
+                info!("Chain Mode: Tor over Nym. Starting Nym first.");
+                if let Err(e) = self.nym_adapter.start().await {
+                    error!("Failed to start Nym (required for chaining): {}", e);
+                }
+                // Give Nym time to initialize before starting Tor
+                tokio::time::sleep(std::time::Duration::from_secs(2)).await;
+                if let Err(e) = self.tor_adapter.start().await {
+                    error!("Failed to start Tor: {}", e);
+                }
+            }
+            ChainMode::NymOverTor => {
+                info!("Chain Mode: Nym over Tor. Starting Tor first.");
+                if let Err(e) = self.tor_adapter.start().await {
+                    error!("Failed to start Tor (required for chaining): {}", e);
+                }
+                tokio::time::sleep(std::time::Duration::from_secs(2)).await;
+                if let Err(e) = self.nym_adapter.start().await {
+                    error!("Failed to start Nym: {}", e);
+                }
+            }
+            ChainMode::None => {
+                // Normal startup order
+                if let Err(e) = self.tor_adapter.start().await {
+                    error!("Failed to start Tor: {}", e);
+                }
+                if let Err(e) = self.nym_adapter.start().await {
+                    error!("Failed to start Nym: {}", e);
+                }
+            }
         }
+
+        // Start remaining adapters
         if let Err(e) = self.i2p_adapter.start().await {
             error!("Failed to start I2PD: {}", e);
-        }
-        if let Err(e) = self.nym_adapter.start().await {
-            error!("Failed to start Nym: {}", e);
         }
         if let Err(e) = self.lokinet_adapter.start().await {
             error!("Failed to start Lokinet: {}", e);

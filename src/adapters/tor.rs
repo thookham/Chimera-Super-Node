@@ -39,13 +39,24 @@ impl ProtocolAdapter for TorAdapter {
         }
 
         info!("Starting Tor...");
-        let child = Command::new(&self.settings.binary_path)
-            .arg("--SocksPort")
+        let mut cmd = Command::new(&self.settings.binary_path);
+        cmd.arg("--SocksPort")
             .arg(self.settings.socks_port.to_string())
             .arg("--ControlPort")
             .arg(self.settings.control_port.to_string())
             .arg("--DataDirectory")
-            .arg("data/tor")
+            .arg("data/tor");
+
+        // Phase 4: Protocol Chaining - Use upstream proxy if configured
+        if let Some(ref upstream) = self.settings.upstream_proxy {
+            info!(
+                "Configuring Tor to chain through upstream proxy: {}",
+                upstream
+            );
+            cmd.arg("--Socks5Proxy").arg(upstream);
+        }
+
+        let child = cmd
             .stdout(Stdio::null()) // TODO: Capture logs
             .stderr(Stdio::null())
             .spawn()?;

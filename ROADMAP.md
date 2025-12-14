@@ -46,14 +46,16 @@ This document outlines the development plan for **Chimera**, the unified anonymi
 - [x] **Integration Testing**: Mocked upstream verification for full SOCKS5 flow.
 - [x] **Architecture**: Split into Library/Binary structure for better testability.
 
-## 🔗 Phase 4: The "Super" Protocol (v1.0)
+## 🔗 Phase 4: The "Super" Protocol (v1.0) - **Completed**
 
 **Goal**: Advanced features and protocol chaining.
 
-- [ ] **Protocol Chaining**: Route Tor over Nym (`User -> Nym -> Tor -> Dest`).
+- [x] **Protocol Chaining**: Route Tor over Nym (`User -> Nym -> Tor -> Dest`).
+- [x] **Health Monitor**: Background task for failover support.
 - [ ] **Smart Fallback (Failover)**: If one network is down, automatically switch to another.
 - [ ] **Bonded Mode**: Split traffic across multiple networks for speed/redundancy.
 - [ ] **Round-Robin**: Rotate exit networks for each request to maximize anonymity set.
+- [ ] **Identity Vault**: Encrypted storage for private keys across all networks.
 - [ ] **Identity Vault**: Encrypted storage for private keys across all networks.
 
 ## 🖥️ Phase 5: User Experience (v1.5)

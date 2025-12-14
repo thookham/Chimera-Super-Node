@@ -41,6 +41,7 @@ async fn main() -> anyhow::Result<()> {
 
     // 3. Start Sidecar Processes (Tor, I2P, Nym, Lokinet, IPFS, ZeroNet, Freenet)
     let pm = ProcessManager::new(
+        settings.chain_mode.clone(),
         settings.tor.clone(),
         settings.i2p.clone(),
         settings.nym.clone(),

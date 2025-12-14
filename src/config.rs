@@ -1,9 +1,20 @@
 use config::{Config, ConfigError, File};
 use serde::Deserialize;
 
+/// Protocol chaining mode for multi-hop routing
+#[derive(Debug, Deserialize, Clone, Default, PartialEq)]
+#[serde(rename_all = "snake_case")]
+pub enum ChainMode {
+    #[default]
+    None,
+    TorOverNym,
+    NymOverTor,
+}
+
 #[derive(Debug, Deserialize, Clone)]
 pub struct Settings {
     pub server: ServerSettings,
+    pub chain_mode: ChainMode,
     pub tor: TorSettings,
     pub i2p: I2pSettings,
     pub lokinet: LokinetSettings,
@@ -29,6 +40,10 @@ pub struct TorSettings {
     pub binary_path: String,
     pub socks_port: u16,
     pub control_port: u16,
+    /// Optional upstream SOCKS5 proxy (for chaining, e.g., Nym)
+    pub upstream_proxy: Option<String>,
+    /// Fallback protocol if Tor is unhealthy
+    pub fallback_protocol: Option<String>,
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -105,10 +120,14 @@ impl Settings {
             .set_default("server.host", "127.0.0.1")?
             .set_default("server.port", 9050)?
             .set_default("server.log_level", "info")?
+            // Phase 4: Protocol Chaining
+            .set_default("chain_mode", "none")?
             .set_default("tor.enabled", true)?
             .set_default("tor.binary_path", "bin/tor.exe")?
             .set_default("tor.socks_port", 9052)?
             .set_default("tor.control_port", 9051)?
+            .set_default("tor.upstream_proxy", None::<String>)?
+            .set_default("tor.fallback_protocol", None::<String>)?
             .set_default("i2p.enabled", true)?
             .set_default("i2p.binary_path", "bin/i2pd.exe")?
             .set_default("i2p.socks_port", 4447)?
