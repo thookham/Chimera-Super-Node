@@ -10,12 +10,33 @@ interface ProtocolStatus {
 }
 
 const protocols: ProtocolStatus[] = [
+  // Core anonymity networks
   { name: "Tor", icon: "🧅", status: "offline", port: 9052 },
   { name: "I2P", icon: "👁", status: "offline", port: 4447 },
   { name: "Nym", icon: "🔗", status: "offline", port: 1080 },
   { name: "Lokinet", icon: "🔒", status: "offline", port: 1090 },
+  // Decentralized web
   { name: "IPFS", icon: "🌐", status: "offline", port: 8080 },
   { name: "ZeroNet", icon: "⚡", status: "offline", port: 43110 },
+  { name: "Freenet", icon: "🕊️", status: "offline", port: 8888 },
+  { name: "GNUnet", icon: "🐃", status: "offline", port: 2086 },
+  // P2P networks
+  { name: "RetroShare", icon: "💬", status: "offline", port: 0 },
+  { name: "Tribler", icon: "📺", status: "offline", port: 0 },
+  // Mesh networks
+  { name: "Yggdrasil", icon: "🌳", status: "offline", port: 0 },
+  { name: "CJDNS", icon: "🕸️", status: "offline", port: 0 },
+  // Censorship bypass
+  { name: "Psiphon", icon: "🛡️", status: "offline", port: 1081 },
+  { name: "Lantern", icon: "🏮", status: "offline", port: 1082 },
+  { name: "Outline", icon: "📦", status: "offline", port: 1083 },
+  // Tor transports
+  { name: "Snowflake", icon: "❄️", status: "offline", port: 0 },
+  { name: "Obfs4", icon: "🎭", status: "offline", port: 0 },
+  { name: "Meek", icon: "🪞", status: "offline", port: 0 },
+  // Decentralized VPN
+  { name: "Mysterium", icon: "🔮", status: "offline", port: 1084 },
+  { name: "Sentinel", icon: "🛰️", status: "offline", port: 1085 },
 ];
 
 function ProtocolCard({ protocol, daemonRunning }: { protocol: ProtocolStatus; daemonRunning: boolean }) {
@@ -147,9 +168,25 @@ function App() {
         </div>
       )}
 
+      {/* Proxy Info Banner */}
+      {daemonRunning && (
+        <div className="glass-card p-4 mb-6 border-green-500/50 border">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="font-semibold text-green-400">🌐 Proxy Ready</p>
+              <p className="text-sm text-gray-400">Configure your browser to use:</p>
+            </div>
+            <div className="text-right">
+              <code className="bg-gray-800 px-3 py-1 rounded text-lg font-mono text-white">127.0.0.1:9050</code>
+              <p className="text-xs text-gray-500 mt-1">SOCKS5 Proxy</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Protocol Grid */}
       <section className="mb-8">
-        <h2 className="text-lg font-semibold mb-4 text-gray-300">Protocols</h2>
+        <h2 className="text-lg font-semibold mb-4 text-gray-300">Protocols ({protocols.length})</h2>
         <div className="flex flex-wrap gap-4">
           {protocols.map((p) => (
             <ProtocolCard key={p.name} protocol={p} daemonRunning={daemonRunning} />
