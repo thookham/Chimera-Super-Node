@@ -16,6 +16,7 @@ pub mod sentinel;
 pub mod snowflake;
 pub mod tor;
 pub mod tribler;
+pub mod trojan;
 pub mod yggdrasil;
 pub mod zeronet;
 

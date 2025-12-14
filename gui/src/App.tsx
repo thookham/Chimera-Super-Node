@@ -37,6 +37,8 @@ const protocols: ProtocolStatus[] = [
   // Decentralized VPN
   { name: "Mysterium", icon: "🔮", status: "offline", port: 1084 },
   { name: "Sentinel", icon: "🛰️", status: "offline", port: 1085 },
+  // Anti-censorship
+  { name: "Trojan", icon: "🐴", status: "offline", port: 1086 },
 ];
 
 function ProtocolCard({ protocol, daemonRunning }: { protocol: ProtocolStatus; daemonRunning: boolean }) {
