@@ -3,3 +3,9 @@
 **/*.rs.bk
 *.pdb
 *.exe
+
+*.lib
+*.rlib
+*.rmeta
+*.obj
+dep-graph.bin
