@@ -60,6 +60,12 @@ graph TD
     - **I2PD**: Install `i2pd` or place binary in `bin/`.
     - **Lokinet**: Install `lokinet` or place binary in `bin/`.
 
+4.  **Configuration**:
+    ```bash
+    cp chimera.example.toml chimera.toml
+    # Edit chimera.toml to configure your paths and enabled protocols
+    ```
+
 ## 📖 Usage
 
 1.  **Run the Daemon**:
