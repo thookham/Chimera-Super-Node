@@ -1,0 +1,12 @@
+[submodule "i2pd"]
+	path = i2pd
+	url = https://github.com/PurpleI2P/i2pd.git
+[submodule "tor"]
+	path = tor
+	url = https://gitlab.torproject.org/tpo/core/tor.git
+[submodule "lokinet"]
+	path = lokinet
+	url = https://github.com/oxen-io/lokinet.git
+[submodule "nym"]
+	path = nym
+	url = https://github.com/nymtech/nym.git

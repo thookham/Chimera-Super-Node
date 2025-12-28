@@ -39,16 +39,42 @@ impl ProtocolAdapter for I2pAdapter {
         }
 
         info!("Starting I2PD...");
-        let child = Command::new(&self.settings.binary_path)
-            .arg(format!("--socksproxy.port={}", self.settings.socks_port))
+        let mut cmd = Command::new(&self.settings.binary_path);
+        cmd.arg(format!("--socksproxy.port={}", self.settings.socks_port))
             .arg(format!(
                 "--httpproxy.port={}",
                 self.settings.http_proxy_port
             ))
-            .arg("--datadir=data/i2p")
-            .stdout(Stdio::null())
-            .stderr(Stdio::null())
-            .spawn()?;
+            .arg("--datadir=data/i2p");
+
+        let data_dir = Path::new("data/i2p");
+        if !data_dir.exists() {
+            info!("Creating I2P data directory: {:?}", data_dir);
+            std::fs::create_dir_all(data_dir)?;
+        }
+
+        cmd.stdout(Stdio::piped()).stderr(Stdio::piped());
+
+        let mut child = cmd.spawn()?;
+
+        if let Some(stdout) = child.stdout.take() {
+             tokio::spawn(async move {
+                 use tokio::io::{AsyncBufReadExt, BufReader};
+                 let mut reader = BufReader::new(stdout).lines();
+                 while let Ok(Some(line)) = reader.next_line().await {
+                     info!("[I2PD] {}", line);
+                 }
+             });
+        }
+        if let Some(stderr) = child.stderr.take() {
+             tokio::spawn(async move {
+                 use tokio::io::{AsyncBufReadExt, BufReader};
+                 let mut reader = BufReader::new(stderr).lines();
+                 while let Ok(Some(line)) = reader.next_line().await {
+                     log::warn!("[I2PD] {}", line);
+                 }
+             });
+        }
 
         let mut proc_lock = self.process.lock().await;
         *proc_lock = Some(child);

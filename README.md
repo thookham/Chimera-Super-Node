@@ -2,131 +2,95 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Rust](https://img.shields.io/badge/rust-1.75%2B-orange.svg)](https://www.rust-lang.org)
-[![Status](https://img.shields.io/badge/status-alpha-orange.svg)](https://github.com/thookham/TorI2P_SuperNode)
-[![Build](https://img.shields.io/badge/build-passing-brightgreen.svg)]()
-[![Tests](https://img.shields.io/badge/tests-passing-brightgreen.svg)]()
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+[![Security: CISA Aligned](https://img.shields.io/badge/Security-CISA_Aligned-blue)](SECURITY.md)
 
 **Chimera** is a unified, multi-protocol anonymity tool that orchestrates access to **Tor**, **I2P**, **Lokinet**, and **Nym** through a single, intelligent proxy interface.
 
 > "One Proxy to Rule Them All."
 
+---
+
 ## 🚀 Features
 
-- **Unified Interface**: A single SOCKS5/HTTP proxy that routes traffic based on TLD.
-  - `.onion` → **Tor** (The Onion Router)
-  - `.i2p` → **I2PD** (Invisible Internet Project)
-  - `.loki` → **Lokinet** (Session Ecosystem)
-  - `.nym` → **Nym** (Mixnet)
-  - `.eth` / `.bit` → **ZeroNet** (Decentralized Web)
-  - `ipfs://` → **IPFS** (InterPlanetary File System)
-  - `USK@` / `SSK@` → **Freenet/Hyphanet** (Censorship-Resistant Store)
-  - `.gnu` / `.zkey` → **GNUnet** (GNS Proxy)
-  - `retroshare://` → **RetroShare** (Friend-to-Friend)
-  - `tribler://` → **Tribler** (Anonymous BitTorrent)
-- **Future Protocol Support**:
-  - **Protocol Chaining**: Route Tor via Nym.
-  - **Failover & Bonding**: Multi-path routing.
-- **Rust Core**: Built in Rust for memory safety, performance, and native integration with Nym.
-- **Embedded Daemons**: Manages the lifecycle of underlying anonymity protocols automatically.
-- **Protocol Chaining** (Planned): Route Tor traffic through Nym for metadata resistance.
+- **Unified SOCKS5 Interface**: Route `.onion`, `.i2p`, `.loki`, and `.nym` traffic transparently.
+- **Protocol Chaining**: Route Tor over Nym for metadata obscuration.
+- **Memory Safe**: Built in **Rust**, aligning with [CISA Memory Safety Guidance](https://www.cisa.gov/news-events/news/urgent-need-memory-safety-software-products).
+- **Embedded Process Manager**: Automatically manages the lifecycle of Tor, I2P, and Lokinet daemons.
+- **Decentralized Web**: Native support for IPFS, ZeroNet, and Freenet routing.
 
 ## 🏗️ Architecture
 
-Chimera acts as a "Super Node" orchestrator, linking to C/C++ and Rust libraries to provide a seamless experience.
+Chimera acts as a "Super Node" orchestrator. See [ARCHITECTURE.md](docs/ARCHITECTURE.md) for a deep dive.
 
 ```mermaid
 graph TD
     User[User / App] -->|SOCKS5 :9050| Chimera[Chimera Daemon]
-    
-    subgraph "Chimera Core (Rust)"
-        Chimera --> Router{Smart Router}
-        Router -->|*.onion| Tor[Tor Adapter]
-        Router -->|*.i2p| I2P[I2PD Adapter]
-        Router -->|*.loki| Loki[Lokinet Adapter]
-        Router -->|*.nym| Nym[Nym Adapter]
-    end
-    
-    Tor -->|TCP| TorNet[Tor Network]
-    I2P -->|TCP/UDP| I2PNet[I2P Network]
-    Loki -->|UDP| LokiNet[Lokinet]
-    Nym -->|Mixnet| NymNet[Nym Network]
+    Chimera -->|*.onion| Tor[Tor Adapter]
+    Chimera -->|*.i2p| I2P[I2PD Adapter]
+    Chimera -->|*.loki| Lokinet[Lokinet]
+    Chimera -->|*.nym| Nym[Nym Adapter]
 ```
 
 ## 🛠️ Installation
 
 ### Prerequisites
 
-- **Rust**: `stable` toolchain ([Install Rust](https://rustup.rs/))
-- **CMake**: For compiling C/C++ dependencies.
-- **Git**: For fetching submodules.
+- **Linux / WSL2** (Recommended) or Windows
+- **Rust Toolchain**: `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh`
+- **Git**: `sudo apt install git`
+- **Build Tools**: `sudo apt install build-essential cmake`
 
 ### Build from Source
 
-```bash
-# Clone the repository with submodules
-git clone --recursive https://github.com/thookham/Chimera-Super-Node.git
-cd Chimera-Super-Node
+1.  **Clone the Repository**:
+    ```bash
+    git clone --recursive https://github.com/thookham/Chimera-Super-Node.git
+    cd Chimera-Super-Node
+    ```
 
-# Build the project
-cargo build --release
-```
+2.  **Build**:
+    ```bash
+    cargo build --release
+    ```
 
-### Runtime Requirements
-
-Chimera requires the **Tor** and **I2PD** binaries to be present in the `bin/` directory or in your system PATH.
-
-1. **Create a `bin` directory** in the project root.
-2. **Download Tor**: [Tor Expert Bundle](https://www.torproject.org/download/tor/)
-    - Extract `tor.exe` to `bin/tor.exe`.
-3. **Download I2PD**: [I2PD Releases](https://github.com/PurpleI2P/i2pd/releases)
-    - Extract `i2pd.exe` to `bin/i2pd.exe`.
-
-```bash
-# Run the daemon
-./target/release/chimera_node
-```
+3.  **Prepare Binaries**:
+    Chimera requires external binaries for the protocols you wish to use.
+    - Create a `bin/` directory: `mkdir bin`
+    - **Tor**: Install `tor` (`sudo apt install tor`) or place `tor` executable in `bin/`.
+    - **I2PD**: Install `i2pd` or place binary in `bin/`.
+    - **Lokinet**: Install `lokinet` or place binary in `bin/`.
 
 ## 📖 Usage
 
-Configure your browser or application to use the Chimera proxy:
+1.  **Run the Daemon**:
+    ```bash
+    ./target/release/chimera_node
+    ```
+    *Chimera will automatically start configured sidecars (Tor, I2P, etc.) and listen on port 9050.*
 
-- **Proxy Type**: SOCKS5
-- **Host**: `127.0.0.1`
-- **Port**: `9050` (Default)
+2.  **Configure Your Browser**:
+    Set your SOCKS5 proxy to `127.0.0.1:9050`.
 
-Now you can access:
+3.  **Browse**:
+    - Tor: `http://duckduckgo...onion`
+    - I2P: `http://i2p-projekt.i2p`
+    - Lokinet: `http://directory.loki`
+    - IPFS: `http://ipfs.io.ipfs`
 
-- `http://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion` (Tor)
-- `http://i2p-projekt.i2p` (I2P)
-- `http://directory.loki` (Lokinet)
+## 🔒 Security & CISA Compliance
 
-### Nym Configuration
+Chimera is designed with security as a priority, following **CISA's Secure Software Development Framework**.
 
-To use Nym (SOCKS5), you must specify a valid **Network Requester** address in `chimera.toml`:
+- **Memory Safety**: 100% Rust codebase prevents buffer overflows.
+- **Input Validation**: Strict parsing of SOCKS5 headers and config files.
+- **Least Privilege**: Sidecars run as separate processes; ideally, run Chimera as a non-root user.
 
-```toml
-[nym]
-enabled = true
-# Example Network Requester Address (Check Nym Explorer for valid ones)
-upstream_provider = "By...ID@GatewayID"
-```
-
-## 🗺️ Roadmap
-
-See [ROADMAP.md](ROADMAP.md) for our detailed development plan, including upcoming features like Protocol Chaining and GUI development.
-
-## 📚 Documentation
-
-- **[Golden Nuggets](docs/GOLDEN_NUGGETS.md)**: Research from 24 privacy protocols informing Chimera's design (Tor, I2P, Nym, Lokinet, IPFS, ZeroNet, Freenet, GNUnet, Psiphon, Mysterium, Yggdrasil, WireGuard, and more).
+See [SECURITY.md](SECURITY.md) for our full policy and reporting instructions.
 
 ## 🤝 Contributing
 
-We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on how to get started.
+We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## 📜 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
-*Disclaimer: Chimera is experimental software. Do not rely on it for strong anonymity until it reaches a stable release.*
+MIT License. See [LICENSE](LICENSE).

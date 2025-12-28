@@ -59,11 +59,31 @@ impl ProtocolAdapter for LokinetAdapter {
 
         // Lokinet usually runs as a system service or needs admin privileges
         // For this adapter, we assume we are running the binary directly
-        let child = Command::new(&self.settings.binary_path)
-            .arg(config_path.to_str().unwrap_or("lokinet.ini"))
-            .stdout(Stdio::null())
-            .stderr(Stdio::null())
-            .spawn()?;
+        let mut cmd = Command::new(&self.settings.binary_path);
+        cmd.arg(config_path.to_str().unwrap_or("lokinet.ini"))
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped());
+
+        let mut child = cmd.spawn()?;
+
+        if let Some(stdout) = child.stdout.take() {
+            tokio::spawn(async move {
+                use tokio::io::{AsyncBufReadExt, BufReader};
+                let mut reader = BufReader::new(stdout).lines();
+                while let Ok(Some(line)) = reader.next_line().await {
+                    info!("[Lokinet] {}", line);
+                }
+            });
+        }
+        if let Some(stderr) = child.stderr.take() {
+            tokio::spawn(async move {
+                use tokio::io::{AsyncBufReadExt, BufReader};
+                let mut reader = BufReader::new(stderr).lines();
+                while let Ok(Some(line)) = reader.next_line().await {
+                    log::warn!("[Lokinet] {}", line);
+                }
+            });
+        }
 
         let mut proc_lock = self.process.lock().await;
         *proc_lock = Some(child);
