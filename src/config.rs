@@ -122,35 +122,43 @@ impl Settings {
             .set_default("server.log_level", "info")?
             // Phase 4: Protocol Chaining
             .set_default("chain_mode", "none")?
-            .set_default("tor.enabled", true)?
-            #[cfg(target_os = "windows")]
-            .set_default("tor.binary_path", "bin/tor.exe")?
-            #[cfg(not(target_os = "windows"))]
-            .set_default("tor.binary_path", "bin/tor")?
-            .set_default("tor.socks_port", 9052)?
+            .set_default("tor.enabled", true)?;
+
+        #[cfg(target_os = "windows")]
+        let s = s.set_default("tor.binary_path", "bin/tor.exe")?;
+        #[cfg(not(target_os = "windows"))]
+        let s = s.set_default("tor.binary_path", "bin/tor")?;
+
+        let s = s.set_default("tor.socks_port", 9052)?
             .set_default("tor.control_port", 9051)?
             .set_default("tor.upstream_proxy", None::<String>)?
             .set_default("tor.fallback_protocol", None::<String>)?
-            .set_default("i2p.enabled", true)?
-            #[cfg(target_os = "windows")]
-            .set_default("i2p.binary_path", "bin/i2pd.exe")?
-            #[cfg(not(target_os = "windows"))]
-            .set_default("i2p.binary_path", "bin/i2pd")?
-            .set_default("i2p.socks_port", 4447)?
+            .set_default("i2p.enabled", true)?;
+
+        #[cfg(target_os = "windows")]
+        let s = s.set_default("i2p.binary_path", "bin/i2pd.exe")?;
+        #[cfg(not(target_os = "windows"))]
+        let s = s.set_default("i2p.binary_path", "bin/i2pd")?;
+
+        let s = s.set_default("i2p.socks_port", 4447)?
             .set_default("i2p.http_proxy_port", 4444)?
-            .set_default("lokinet.enabled", false)?
-            #[cfg(target_os = "windows")]
-            .set_default("lokinet.binary_path", "bin/lokinet.exe")?
-            #[cfg(not(target_os = "windows"))]
-            .set_default("lokinet.binary_path", "bin/lokinet")?
-            .set_default("lokinet.dns_port", 1053)?
+            .set_default("lokinet.enabled", false)?;
+
+        #[cfg(target_os = "windows")]
+        let s = s.set_default("lokinet.binary_path", "bin/lokinet.exe")?;
+        #[cfg(not(target_os = "windows"))]
+        let s = s.set_default("lokinet.binary_path", "bin/lokinet")?;
+
+        let s = s.set_default("lokinet.dns_port", 1053)?
             .set_default("lokinet.socks_port", 1090)?
-            .set_default("nym.enabled", false)?
-            #[cfg(target_os = "windows")]
-            .set_default("nym.binary_path", "bin/nym-socks5-client.exe")?
-            #[cfg(not(target_os = "windows"))]
-            .set_default("nym.binary_path", "bin/nym-socks5-client")?
-            .set_default("nym.socks_port", 1080)?
+            .set_default("nym.enabled", false)?;
+
+        #[cfg(target_os = "windows")]
+        let s = s.set_default("nym.binary_path", "bin/nym-socks5-client.exe")?;
+        #[cfg(not(target_os = "windows"))]
+        let s = s.set_default("nym.binary_path", "bin/nym-socks5-client")?;
+
+        let s = s.set_default("nym.socks_port", 1080)?
             .set_default("nym.upstream_provider", None::<String>)?
             // Phase 2.5: Decentralized Web
             .set_default("ipfs.enabled", false)?
