@@ -1,8 +1,10 @@
 use chimera_node::config::Settings;
+use chimera_node::health_monitor::Protocol;
 use chimera_node::process_manager::ProcessManager;
 use chimera_node::socks5::Socks5Server;
 use clap::Parser;
 use log::{error, info};
+use std::collections::HashSet;
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -40,8 +42,22 @@ async fn main() -> anyhow::Result<()> {
     );
 
     // 3. Start Sidecar Processes (Tor, I2P, Nym, Lokinet, IPFS, ZeroNet, Freenet)
+    // For standalone binary, we enable ALL protocols by default for now
+    let mut enabled_protocols = HashSet::new();
+    enabled_protocols.insert(Protocol::Tor);
+    enabled_protocols.insert(Protocol::I2p);
+    enabled_protocols.insert(Protocol::Nym);
+    enabled_protocols.insert(Protocol::Lokinet);
+    enabled_protocols.insert(Protocol::Ipfs);
+    enabled_protocols.insert(Protocol::ZeroNet);
+    enabled_protocols.insert(Protocol::Freenet);
+    enabled_protocols.insert(Protocol::RetroShare);
+    enabled_protocols.insert(Protocol::GnuNet);
+    enabled_protocols.insert(Protocol::Tribler);
+
     let pm = ProcessManager::new(
         settings.chain_mode.clone(),
+        enabled_protocols,
         settings.tor.clone(),
         settings.i2p.clone(),
         settings.nym.clone(),

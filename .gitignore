@@ -40,3 +40,9 @@ Thumbs.db
 .vscode/
 .idea/
 *.swp
+
+# GUI
+gui/node_modules/
+gui/dist/
+gui/.env
+gui/.env.local

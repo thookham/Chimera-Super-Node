@@ -1,9 +1,10 @@
 use chimera_node::config::Settings;
+use chimera_node::health_monitor::Protocol;
 use chimera_node::process_manager::ProcessManager;
 use chimera_node::socks5::Socks5Server;
 use chrono::Local;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 use tauri::State;
 use tokio::sync::Mutex;
@@ -77,8 +78,12 @@ async fn set_proxy_port(
 }
 
 /// Start all protocols and the SOCKS5 proxy server
+/// Start all protocols and the SOCKS5 proxy server
 #[tauri::command]
-async fn start_daemon(state: State<'_, Arc<Mutex<AppState>>>) -> Result<String, String> {
+async fn start_daemon(
+    state: State<'_, Arc<Mutex<AppState>>>,
+    protocols: Vec<String>,
+) -> Result<String, String> {
     let mut app_state = state.lock().await;
 
     if app_state.running {
@@ -89,9 +94,28 @@ async fn start_daemon(state: State<'_, Arc<Mutex<AppState>>>) -> Result<String, 
     let settings = Settings::new().map_err(|e| format!("Config error: {}", e))?;
     let proxy_port = app_state.proxy_port;
 
+    // Build enabled protocols set
+    let mut enabled_protocols = HashSet::new();
+    for p in protocols {
+        match p.as_str() {
+            "tor" => { enabled_protocols.insert(Protocol::Tor); },
+            "i2p" => { enabled_protocols.insert(Protocol::I2p); },
+            "nym" => { enabled_protocols.insert(Protocol::Nym); },
+            "lokinet" => { enabled_protocols.insert(Protocol::Lokinet); },
+            "ipfs" => { enabled_protocols.insert(Protocol::Ipfs); },
+            "zeronet" => { enabled_protocols.insert(Protocol::ZeroNet); },
+            "freenet" => { enabled_protocols.insert(Protocol::Freenet); },
+            "retroshare" => { enabled_protocols.insert(Protocol::RetroShare); },
+            "gnunet" => { enabled_protocols.insert(Protocol::GnuNet); },
+            "tribler" => { enabled_protocols.insert(Protocol::Tribler); },
+            _ => { eprintln!("Unknown protocol requested: {}", p); }
+        }
+    }
+
     // Create ProcessManager
     let pm = ProcessManager::new(
         settings.chain_mode.clone(),
+        enabled_protocols,
         settings.tor.clone(),
         settings.i2p.clone(),
         settings.nym.clone(),
@@ -169,21 +193,28 @@ async fn get_status(
     status.insert("daemon".to_string(), app_state.running);
     status.insert("proxy".to_string(), app_state.running);
 
-    // TODO: Query individual adapter health when HealthMonitor is integrated
-    let protocols = vec![
-        "tor",
-        "i2p",
-        "nym",
-        "lokinet",
-        "ipfs",
-        "zeronet",
-        "freenet",
-        "gnunet",
-        "retroshare",
-        "tribler",
-    ];
-    for p in protocols {
-        status.insert(p.to_string(), app_state.running);
+    if let Some(pm) = &app_state.process_manager {
+        let health_map = pm.health_state.read().await;
+        
+        status.insert("tor".to_string(), *health_map.get(&Protocol::Tor).unwrap_or(&false));
+        status.insert("i2p".to_string(), *health_map.get(&Protocol::I2p).unwrap_or(&false));
+        status.insert("nym".to_string(), *health_map.get(&Protocol::Nym).unwrap_or(&false));
+        status.insert("lokinet".to_string(), *health_map.get(&Protocol::Lokinet).unwrap_or(&false));
+        status.insert("ipfs".to_string(), *health_map.get(&Protocol::Ipfs).unwrap_or(&false));
+        status.insert("zeronet".to_string(), *health_map.get(&Protocol::ZeroNet).unwrap_or(&false));
+        status.insert("freenet".to_string(), *health_map.get(&Protocol::Freenet).unwrap_or(&false));
+        status.insert("gnunet".to_string(), *health_map.get(&Protocol::GnuNet).unwrap_or(&false));
+        status.insert("retroshare".to_string(), *health_map.get(&Protocol::RetroShare).unwrap_or(&false));
+        status.insert("tribler".to_string(), *health_map.get(&Protocol::Tribler).unwrap_or(&false));
+    } else {
+         // If daemon is stopped, all are false
+        let protocols = vec![
+            "tor", "i2p", "nym", "lokinet", "ipfs", "zeronet", 
+            "freenet", "gnunet", "retroshare", "tribler"
+        ];
+        for p in protocols {
+            status.insert(p.to_string(), false);
+        }
     }
 
     Ok(status)
